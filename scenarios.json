@@ -1,0 +1,449 @@
+{
+  "defaults": {
+    "requestVersion": "1.0.0",
+    "responseVersion": "v1.1",
+    "userId": "usr_demo_01",
+    "attributes": {
+      "sourceLanguage": "en",
+      "targetLanguage": "en",
+      "channel": "web",
+      "location": {
+        "region": "IN-MH",
+        "area": "Nashik",
+        "geometry": { "type": "Point", "coordinates": [73.7898, 19.9975] }
+      },
+      "response": { "maxCharacters": 1200 }
+    },
+    "fallback": {
+      "outcome": { "status": "no_match", "cause": "domain_unmapped", "confidence": 88 },
+      "content": [{ "type": "text", "text": "I could not find an approved agricultural capability for that request." }]
+    }
+  },
+  "scenarios": [
+    {
+      "id": "S01",
+      "title": "PM-KISAN registration form (Hindi)",
+      "kind": "multi",
+      "uiPatterns": ["Form", "Input", "Select", "Steps"],
+      "attributes": { "sourceLanguage": "hi", "targetLanguage": "hi" },
+      "turns": [
+        {
+          "user": { "text": "मुझे पीएम किसान योजना में रजिस्टर करना है" },
+          "response": {
+            "outcome": { "status": "requires_input", "cause": null, "confidence": 93 },
+            "historyText": "पीएम-किसान पंजीकरण फ़ॉर्म दिखाया गया।",
+            "openui": [
+              "root = Stack([hdr, note, form])",
+              "hdr = TextContent(\"पीएम-किसान सम्मान निधि: नया पंजीकरण\", \"large-heavy\")",
+              "note = Callout(\"पात्र किसान परिवार को सालाना ₹6,000 (₹2,000 की तीन किस्तें) सीधे बैंक खाते में मिलते हैं।\", \"info\")",
+              "form = Form(\"pmkisan_register\", acts, [cName, cAadhaar, cMobile, cState, cSurvey, cArea, cAccount])",
+              "cName = FormControl(\"किसान का नाम\", Input(\"name\", \"आधार के अनुसार नाम\", \"text\", {required: true, minLength: 2}))",
+              "cAadhaar = FormControl(\"आधार संख्या\", Input(\"aadhaar\", \"12 अंकों की संख्या\", \"text\", {required: true, minLength: 12}))",
+              "cMobile = FormControl(\"मोबाइल नंबर\", Input(\"mobile\", \"10 अंकों का नंबर\", \"tel\", {required: true, minLength: 10}))",
+              "cState = FormControl(\"राज्य\", Select(\"state\", [\"महाराष्ट्र\", \"गुजरात\", \"मध्य प्रदेश\", \"उत्तर प्रदेश\"], \"राज्य चुनें\"))",
+              "cSurvey = FormControl(\"खसरा / सर्वे नंबर\", Input(\"survey_no\", \"जैसे 142/2\", \"text\", {required: true}))",
+              "cArea = FormControl(\"कृषि भूमि (हेक्टेयर)\", Input(\"area_ha\", \"0.5\", \"number\", {required: true}))",
+              "cAccount = FormControl(\"बैंक खाता संख्या\", Input(\"account\", \"खाता संख्या\", \"text\", {required: true}))",
+              "acts = Buttons([submit, cancel], \"row\")",
+              "submit = Button(\"पंजीकरण जमा करें\", @ToAssistant(\"पीएम-किसान पंजीकरण जमा करें\"), \"primary\")",
+              "cancel = Button(\"रद्द करें\", @ToAssistant(\"पंजीकरण रद्द करें\"), \"secondary\")"
+            ],
+            "sources": [{ "id": "src_1", "name": "PM-KISAN Portal", "kind": "provider" }]
+          }
+        },
+        {
+          "user": {
+            "text": "पीएम-किसान पंजीकरण जमा करें",
+            "formValues": { "name": "रमेश पाटिल", "aadhaar": "XXXXXXXX1234", "mobile": "9876543210", "state": "महाराष्ट्र", "survey_no": "142/2", "area_ha": "1.2", "account": "XXXXXX7788" }
+          },
+          "response": {
+            "outcome": { "status": "answered", "cause": null, "confidence": 90 },
+            "historyText": "आपका आवेदन प्राप्त हुआ। ई-केवाईसी पूरा करें।",
+            "openui": [
+              "root = Stack([ok, steps, acts])",
+              "ok = Callout(\"आवेदन संदर्भ संख्या PMK-DEMO-0001 के साथ प्राप्त हुआ।\", \"success\")",
+              "steps = Steps([s1, s2, s3])",
+              "s1 = Step(\"ई-केवाईसी पूरा करें\", \"पोर्टल पर आधार OTP से या नज़दीकी CSC पर बायोमेट्रिक से।\")",
+              "s2 = Step(\"राज्य सत्यापन\", \"आपके भू-अभिलेख का सत्यापन राज्य सरकार करती है।\")",
+              "s3 = Step(\"किस्त जारी\", \"सत्यापन के बाद पहली किस्त बैंक खाते में आएगी।\")",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"ई-केवाईसी में मदद\", @ToAssistant(\"ई-केवाईसी कैसे करें\"), \"primary\")"
+            ],
+            "sources": [{ "id": "src_1", "name": "PM-KISAN Portal", "kind": "provider" }]
+          }
+        }
+      ]
+    },
+    {
+      "id": "S02",
+      "title": "PM-KISAN eligibility check (question form, then verdict)",
+      "kind": "multi",
+      "uiPatterns": ["Form", "Select", "StatCard", "Table", "Steps"],
+      "turns": [
+        {
+          "user": { "text": "Am I eligible for PM-KISAN?" },
+          "response": {
+            "outcome": { "status": "requires_input", "cause": null, "confidence": 90 },
+            "historyText": "Asked three eligibility questions.",
+            "openui": [
+              "root = Stack([hdr, intro, form])",
+              "hdr = TextContent(\"PM-KISAN eligibility check\", \"large-heavy\")",
+              "intro = TextContent(\"Answer three quick questions and I will check your household against the scheme rules.\", \"muted\")",
+              "form = Form(\"pmkisan_elig\", acts, [c1, c2, c3])",
+              "c1 = FormControl(\"Do you own cultivable land in your name?\", Select(\"owns_land\", [\"Yes\", \"No\"], \"Select\"))",
+              "c2 = FormControl(\"Did anyone in your family pay income tax last year?\", Select(\"income_tax\", [\"Yes\", \"No\"], \"Select\"))",
+              "c3 = FormControl(\"Is any family member a serving or retired government officer (other than Group D / MTS)?\", Select(\"govt_job\", [\"Yes\", \"No\"], \"Select\"))",
+              "acts = Buttons([go], \"row\")",
+              "go = Button(\"Check eligibility\", @ToAssistant(\"Check my PM-KISAN eligibility\"), \"primary\")"
+            ],
+            "sources": [{ "id": "src_1", "name": "PM-KISAN Operational Guidelines", "kind": "document" }]
+          }
+        },
+        {
+          "user": {
+            "text": "Check my PM-KISAN eligibility",
+            "formValues": { "owns_land": "Yes", "income_tax": "No", "govt_job": "No" }
+          },
+          "response": {
+            "outcome": { "status": "answered", "cause": null, "confidence": 86 },
+            "historyText": "You are likely eligible for PM-KISAN.",
+            "openui": [
+              "root = Stack([stat, tbl, steps, acts])",
+              "stat = StatCard(\"Result\", \"Likely eligible\", \"Final approval is by your state verification\")",
+              "tbl = Table([\"Rule\", \"Your answer\", \"Status\"], [[\"Owns cultivable land\", \"Yes\", \"Meets\"], [\"Income tax payer in family\", \"No\", \"Meets\"], [\"Government officer in family\", \"No\", \"Meets\"]])",
+              "steps = Steps([s1, s2, s3])",
+              "s1 = Step(\"Keep documents ready\", \"Aadhaar, land record (7/12 or khasra), bank passbook, Aadhaar-linked mobile\")",
+              "s2 = Step(\"Register\", \"On the PM-KISAN portal or at a Common Service Centre\")",
+              "s3 = Step(\"Complete e-KYC\", \"Needed before instalments are released\")",
+              "acts = Buttons([reg], \"row\")",
+              "reg = Button(\"Start registration\", @ToAssistant(\"Start PM-KISAN registration\"), \"primary\")"
+            ],
+            "sources": [{ "id": "src_1", "name": "PM-KISAN Operational Guidelines", "kind": "document" }]
+          }
+        }
+      ]
+    },
+    {
+      "id": "S03",
+      "title": "PMFBY crop insurance enrolment form",
+      "kind": "single",
+      "uiPatterns": ["Form", "Input", "Select", "Date input", "Callout"],
+      "turns": [
+        {
+          "user": { "text": "I want to insure my wheat crop under PMFBY" },
+          "response": {
+            "outcome": { "status": "requires_input", "cause": null, "confidence": 91 },
+            "historyText": "PMFBY enrolment form shown.",
+            "openui": [
+              "root = Stack([hdr, note, form])",
+              "hdr = TextContent(\"PMFBY enrolment: Rabi 2026-27\", \"large-heavy\")",
+              "note = Callout(\"Farmer premium for rabi food crops is 1.5% of the sum insured. The cut-off is usually 31 December; confirm with your bank or CSC.\", \"info\")",
+              "form = Form(\"pmfby_enrol\", acts, [cName, cMobile, cCrop, cArea, cSowing, cSurvey, cLoan, cAccount])",
+              "cName = FormControl(\"Farmer name\", Input(\"name\", \"As per bank record\", \"text\", {required: true, minLength: 2}))",
+              "cMobile = FormControl(\"Mobile number\", Input(\"mobile\", \"10-digit number\", \"tel\", {required: true, minLength: 10}))",
+              "cCrop = FormControl(\"Crop\", Select(\"crop\", [\"Wheat\", \"Gram\", \"Mustard\", \"Onion\"], \"Choose crop\"))",
+              "cArea = FormControl(\"Area to insure (hectares)\", Input(\"area_ha\", \"0.8\", \"number\", {required: true}))",
+              "cSowing = FormControl(\"Sowing date\", Input(\"sowing_date\", \"\", \"date\", {required: true}))",
+              "cSurvey = FormControl(\"Survey / khasra number\", Input(\"survey_no\", \"e.g. 142/2\", \"text\", {required: true}))",
+              "cLoan = FormControl(\"Farmer type\", Select(\"farmer_type\", [\"Loanee farmer\", \"Non-loanee farmer\"], \"Choose\"))",
+              "cAccount = FormControl(\"Bank account number\", Input(\"account\", \"Account number\", \"text\", {required: true}))",
+              "acts = Buttons([submit], \"row\")",
+              "submit = Button(\"Enrol for insurance\", @ToAssistant(\"Enrol me in PMFBY\"), \"primary\")"
+            ],
+            "sources": [{ "id": "src_1", "name": "PMFBY Portal", "kind": "provider" }]
+          }
+        }
+      ]
+    },
+    {
+      "id": "S04",
+      "title": "Scheme comparison: PMFBY vs weather-based insurance",
+      "kind": "multi",
+      "uiPatterns": ["Table (comparison)", "Callout", "Buttons"],
+      "turns": [
+        {
+          "user": { "text": "Compare PMFBY and weather based crop insurance" },
+          "response": {
+            "outcome": { "status": "answered", "cause": null, "confidence": 88 },
+            "historyText": "Compared yield-based PMFBY with weather-based insurance (RWBCIS).",
+            "openui": [
+              "root = Stack([hdr, tbl, note, acts])",
+              "hdr = TextContent(\"PMFBY (yield-based) vs RWBCIS (weather-based)\", \"large-heavy\")",
+              "tbl = Table([\"Feature\", \"PMFBY (yield-based)\", \"RWBCIS (weather-based)\"], [[\"Claim trigger\", \"Yield loss at insurance-unit level\", \"Weather deviation at the reference station\"], [\"How loss is measured\", \"Crop-cutting experiments\", \"Rainfall, temperature or humidity index\"], [\"Farmer premium\", \"2% kharif, 1.5% rabi, 5% commercial/horticulture\", \"Same farmer share\"], [\"Claim speed\", \"Slower: waits for yield data\", \"Faster: automatic from weather data\"], [\"Main risk\", \"Unit-level average may hide your loss\", \"Station may not match your field\"]])",
+              "note = Callout(\"Which product is offered depends on your state and notified crop. Check with your bank or CSC.\", \"info\")",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"Which is better for cotton in Nashik?\", @ToAssistant(\"Which is better for cotton in Nashik?\"), \"primary\")"
+            ],
+            "sources": [{ "id": "src_1", "name": "PMFBY Operational Guidelines", "kind": "document" }]
+          }
+        },
+        {
+          "user": { "text": "Which is better for cotton in Nashik?" },
+          "response": {
+            "outcome": { "status": "answered", "cause": null, "confidence": 74 },
+            "historyText": "For cotton in Nashik, check which product the district notifies; PMFBY is the usual default.",
+            "openui": [
+              "root = Stack([stat, tbl, note])",
+              "stat = StatCard(\"Suggested starting point\", \"PMFBY (yield-based)\", \"If cotton is notified for your Nashik taluka\")",
+              "tbl = Table([\"Check\", \"What to do\"], [[\"Notified product\", \"Ask your bank or CSC which scheme covers cotton in your taluka\"], [\"Premium\", \"Cotton is a commercial crop: farmer share is 5%\"], [\"Cut-off date\", \"Usually 31 July for kharif\"]])",
+              "note = Callout(\"I cannot confirm the notified scheme for your taluka. Verify before enrolling.\", \"warn\")"
+            ],
+            "sources": [{ "id": "src_1", "name": "PMFBY Operational Guidelines", "kind": "document" }]
+          }
+        }
+      ]
+    },
+    {
+      "id": "S05",
+      "title": "Pest attack: image, confirm with farmer, spray plan, then fertilizer images",
+      "kind": "multi-image",
+      "uiPatterns": ["ImageGrid", "ImageCard", "Buttons (confirm)", "Steps", "Table", "product images"],
+      "turns": [
+        {
+          "user": { "text": "What is eating my maize leaves?", "image": "/samples/maize-leaf-damage.png" },
+          "response": {
+            "outcome": { "status": "requires_input", "cause": null, "confidence": 64 },
+            "historyText": "Asked the farmer to confirm which pest matches: fall armyworm, stem borer or grasshopper.",
+            "openui": [
+              "root = Stack([note, grid, acts])",
+              "note = Callout(\"I see ragged holes in the whorl and dark droppings. Please confirm which picture matches your field.\", \"info\")",
+              "grid = ImageGrid([i1, i2, i3])",
+              "i1 = ImageCard(\"/ref/faw.png\", \"Fall armyworm: ragged holes in the whorl, sawdust-like droppings\", \"Most likely\")",
+              "i2 = ImageCard(\"/ref/stem-borer.png\", \"Stem borer: small shot-holes and dead heart\")",
+              "i3 = ImageCard(\"/ref/grasshopper.png\", \"Grasshopper: leaf edges eaten from outside\")",
+              "acts = Buttons([y, n1, n2], \"column\")",
+              "y = Button(\"Yes, it is fall armyworm\", @ToAssistant(\"Yes, it is fall armyworm\"), \"primary\")",
+              "n1 = Button(\"It looks like stem borer\", @ToAssistant(\"It looks like stem borer\"), \"secondary\")",
+              "n2 = Button(\"None of these\", @ToAssistant(\"None of these match\"), \"secondary\")"
+            ],
+            "sources": [{ "id": "src_1", "name": "ICAR-NBAIR Pest Guide", "kind": "document" }]
+          }
+        },
+        {
+          "user": { "text": "Yes, it is fall armyworm" },
+          "response": {
+            "outcome": { "status": "answered", "cause": null, "confidence": 89 },
+            "historyText": "Fall armyworm confirmed by farmer. Scout fields and spray emamectin benzoate or spinetoram.",
+            "openui": [
+              "root = Stack([warn, steps, grid, note, acts])",
+              "warn = Callout(\"Fall armyworm confirmed by you. Act within 2 to 3 days while larvae are small.\", \"warn\")",
+              "steps = Steps([s1, s2, s3])",
+              "s1 = Step(\"Scout\", \"Check 20 plants in a W pattern. Treat if more than 5% of plants show whorl damage.\")",
+              "s2 = Step(\"Early stage\", \"Spray neem oil 5 ml per litre, aiming into the whorl, in the evening.\")",
+              "s3 = Step(\"Heavy damage\", \"Spray emamectin benzoate 5% SG at 0.4 g per litre, or spinetoram 11.7% SC at 0.5 ml per litre.\")",
+              "grid = ImageGrid([p1, p2, p3])",
+              "p1 = ImageCard(\"/ref/neem.png\", \"Neem oil 1500 ppm\", \"Early stage\")",
+              "p2 = ImageCard(\"/ref/emamectin.png\", \"Emamectin benzoate 5% SG\", \"Heavy damage\")",
+              "p3 = ImageCard(\"/ref/spinetoram.png\", \"Spinetoram 11.7% SC\", \"Heavy damage\")",
+              "note = Callout(\"Sample guidance for UI testing. Confirm doses with your local KVK.\", \"info\")",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"Show fertilizer to help the crop recover\", @ToAssistant(\"Show fertilizer to help the crop recover\"), \"primary\")"
+            ],
+            "sources": [{ "id": "src_1", "name": "ICAR-NBAIR Pest Guide", "kind": "document" }]
+          }
+        },
+        {
+          "user": { "text": "Show fertilizer to help the crop recover" },
+          "response": {
+            "outcome": { "status": "answered", "cause": null, "confidence": 80 },
+            "historyText": "Suggested urea top-dress and potash for recovery after pest control.",
+            "openui": [
+              "root = Stack([hdr, grid, tbl, note])",
+              "hdr = TextContent(\"Recovery nutrition after pest control\", \"large-heavy\")",
+              "grid = ImageGrid([u, m])",
+              "u = ImageCard(\"/ref/urea.png\", \"Urea (46% N)\", \"Top-dress\")",
+              "m = ImageCard(\"/ref/mop.png\", \"Muriate of potash (60% K2O)\", \"Stress tolerance\")",
+              "tbl = Table([\"Product\", \"Per acre\", \"When\"], [[\"Urea\", \"20 kg\", \"7 days after pest control\"], [\"Muriate of potash\", \"10 kg\", \"With the urea\"]])",
+              "note = Callout(\"Apply on moist soil. Sample values for UI testing.\", \"info\")"
+            ],
+            "sources": [{ "id": "src_2", "name": "State Agriculture University Package of Practices", "kind": "document" }]
+          }
+        }
+      ]
+    },
+    {
+      "id": "S06",
+      "title": "Crop disease image: candidates, farmer confirms, treatment",
+      "kind": "multi-image",
+      "uiPatterns": ["ImageGrid", "ImageCard", "Buttons (confirm)", "StatCard", "Steps"],
+      "turns": [
+        {
+          "user": { "text": "What disease is affecting this tomato leaf?", "image": "/samples/tomato-leaf.png" },
+          "response": {
+            "outcome": { "status": "requires_input", "cause": null, "confidence": 61 },
+            "historyText": "Showed early blight, late blight and septoria candidates and asked the farmer to confirm.",
+            "openui": [
+              "root = Stack([note, grid, acts])",
+              "note = Callout(\"The image is not clear enough for a single answer. Which one looks closest to your leaf?\", \"info\")",
+              "grid = ImageGrid([i1, i2, i3])",
+              "i1 = ImageCard(\"/ref/early-blight.png\", \"Early blight: brown spots with concentric rings\", \"Best match\")",
+              "i2 = ImageCard(\"/ref/late-blight.png\", \"Late blight: water-soaked patches with white mould\")",
+              "i3 = ImageCard(\"/ref/septoria.png\", \"Septoria leaf spot: many small round spots\")",
+              "acts = Buttons([b1, b2, b3], \"column\")",
+              "b1 = Button(\"Yes, it is early blight\", @ToAssistant(\"Yes, it is early blight\"), \"primary\")",
+              "b2 = Button(\"It is late blight\", @ToAssistant(\"It is late blight\"), \"secondary\")",
+              "b3 = Button(\"It is septoria leaf spot\", @ToAssistant(\"It is septoria leaf spot\"), \"secondary\")"
+            ],
+            "sources": [{ "id": "src_1", "name": "ICAR Tomato Disease Guide", "kind": "document" }]
+          }
+        },
+        {
+          "user": { "text": "Yes, it is early blight" },
+          "response": {
+            "outcome": { "status": "answered", "cause": null, "confidence": 90 },
+            "historyText": "Early blight confirmed by farmer. Remove lower leaves, spray mancozeb or chlorothalonil.",
+            "openui": [
+              "root = Stack([stat, steps, note])",
+              "stat = StatCard(\"Diagnosis (confirmed by you)\", \"Early blight\", \"Alternaria solani\")",
+              "steps = Steps([s1, s2, s3, s4])",
+              "s1 = Step(\"Remove\", \"Pick off and destroy the lowest infected leaves. Do not compost them.\")",
+              "s2 = Step(\"Spray\", \"Mancozeb 75% WP at 2.5 g per litre, or chlorothalonil 75% WP at 2 g per litre.\")",
+              "s3 = Step(\"Repeat\", \"Repeat after 10 to 12 days, up to 3 sprays.\")",
+              "s4 = Step(\"Prevent\", \"Stake plants, avoid overhead irrigation, rotate away from potato and tomato next season.\")",
+              "note = Callout(\"Sample guidance for UI testing. Follow label dose and waiting period.\", \"info\")"
+            ],
+            "sources": [{ "id": "src_1", "name": "ICAR Tomato Disease Guide", "kind": "document" }]
+          }
+        }
+      ]
+    },
+    {
+      "id": "S07",
+      "title": "Mandi price with chart and nearby mandi comparison",
+      "kind": "single",
+      "uiPatterns": ["StatCard", "BarChart", "Table"],
+      "attributes": { "location": { "region": "IN-GJ", "area": "Anand", "geometry": { "type": "Point", "coordinates": [72.93, 22.56] } } },
+      "turns": [
+        {
+          "user": { "text": "What is the wheat price at Anand mandi this week?" },
+          "response": {
+            "outcome": { "status": "answered", "cause": null, "confidence": 92 },
+            "historyText": "Wheat is Rs 2,275 per quintal at Anand mandi.",
+            "openui": [
+              "root = Stack([hdr, stat, chart, tbl, note])",
+              "hdr = TextContent(\"Wheat prices: Anand mandi, this week\", \"large-heavy\")",
+              "stat = StatCard(\"Modal price today\", \"₹2,275 / quintal\", \"+₹25 vs yesterday\")",
+              "chart = BarChart(\"Daily modal price\", [\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\"], [2210, 2230, 2250, 2250, 2275], \"₹/quintal\")",
+              "tbl = Table([\"Mandi\", \"Min\", \"Modal\", \"Max\"], [[\"Anand\", \"2,150\", \"2,275\", \"2,400\"], [\"Nadiad\", \"2,120\", \"2,240\", \"2,380\"], [\"Vadodara\", \"2,140\", \"2,260\", \"2,410\"]])",
+              "note = TextContent(\"Source: Agmarknet. Sample values for UI testing.\", \"muted\")"
+            ],
+            "sources": [{ "id": "src_1", "name": "Agmarknet", "kind": "provider" }]
+          }
+        }
+      ]
+    },
+    {
+      "id": "S08",
+      "title": "Fertilizer recommendation with product images",
+      "kind": "single",
+      "uiPatterns": ["ImageGrid", "ImageCard", "Table", "Callout"],
+      "turns": [
+        {
+          "user": { "text": "Which fertilizer should I apply for wheat on my farm?" },
+          "response": {
+            "outcome": { "status": "answered", "cause": null, "confidence": 85 },
+            "historyText": "Per acre for wheat: DAP 52 kg and MOP 27 kg basal, urea 85 kg split in two.",
+            "openui": [
+              "root = Stack([hdr, grid, tbl, note])",
+              "hdr = TextContent(\"Wheat: fertilizer plan per acre (no soil test)\", \"large-heavy\")",
+              "grid = ImageGrid([d, u, m])",
+              "d = ImageCard(\"/ref/dap.png\", \"DAP (18-46-0)\", \"Basal\")",
+              "u = ImageCard(\"/ref/urea.png\", \"Urea (46% N)\", \"Split\")",
+              "m = ImageCard(\"/ref/mop.png\", \"Muriate of potash (60% K2O)\", \"Basal\")",
+              "tbl = Table([\"Product\", \"At sowing\", \"At 21 days (crown root stage)\"], [[\"DAP\", \"52 kg\", \"-\"], [\"Muriate of potash\", \"27 kg\", \"-\"], [\"Urea\", \"42 kg\", \"43 kg\"]])",
+              "note = Callout(\"Based on 120:60:40 kg N:P2O5:K2O per hectare. A soil test will change this. Sample values for UI testing.\", \"info\")"
+            ],
+            "sources": [{ "id": "src_1", "name": "State Agriculture University Package of Practices", "kind": "document" }]
+          }
+        }
+      ]
+    },
+    {
+      "id": "S09",
+      "title": "PM-KISAN installment status (lookup form, then status with e-KYC alert)",
+      "kind": "multi",
+      "uiPatterns": ["Form", "Table", "Callout (danger)", "Steps"],
+      "turns": [
+        {
+          "user": { "text": "Where is my PM-KISAN installment?" },
+          "response": {
+            "outcome": { "status": "requires_input", "cause": null, "confidence": 92 },
+            "historyText": "Asked for the registered mobile number to look up status.",
+            "openui": [
+              "root = Stack([hdr, form])",
+              "hdr = TextContent(\"Check PM-KISAN installment status\", \"large-heavy\")",
+              "form = Form(\"pmkisan_status\", acts, [c1])",
+              "c1 = FormControl(\"Registered mobile number\", Input(\"mobile\", \"10-digit number\", \"tel\", {required: true, minLength: 10}))",
+              "acts = Buttons([go], \"row\")",
+              "go = Button(\"Check status\", @ToAssistant(\"Check status for PM-KISAN\"), \"primary\")"
+            ],
+            "sources": [{ "id": "src_1", "name": "PM-KISAN Portal", "kind": "provider" }]
+          }
+        },
+        {
+          "user": { "text": "Check status for PM-KISAN", "formValues": { "mobile": "9876543210" } },
+          "response": {
+            "outcome": { "status": "answered", "cause": null, "confidence": 87 },
+            "historyText": "Two installments credited, third on hold because e-KYC is pending.",
+            "openui": [
+              "root = Stack([alert, tbl, steps])",
+              "alert = Callout(\"Your next installment is on hold: e-KYC is pending.\", \"danger\")",
+              "tbl = Table([\"Installment\", \"Period\", \"Amount\", \"Status\"], [[\"1\", \"Apr to Jul 2026\", \"₹2,000\", \"Credited\"], [\"2\", \"Aug to Nov 2026\", \"₹2,000\", \"On hold: e-KYC pending\"], [\"3\", \"Dec 2026 to Mar 2027\", \"₹2,000\", \"Not due\"]])",
+              "steps = Steps([s1, s2])",
+              "s1 = Step(\"Do e-KYC\", \"Use Aadhaar OTP on the PM-KISAN portal, or biometric at a nearby CSC.\")",
+              "s2 = Step(\"Wait for release\", \"Held installments are usually released after verification.\")"
+            ],
+            "sources": [{ "id": "src_1", "name": "PM-KISAN Portal", "kind": "provider" }]
+          }
+        }
+      ]
+    },
+    {
+      "id": "S10",
+      "title": "Outcome states: partially_answered with refusal and question, then provider outage",
+      "kind": "multi",
+      "uiPatterns": ["mixed content (text, refusal, text)", "Select", "Callout (danger)", "error object", "Retry"],
+      "turns": [
+        {
+          "user": { "text": "Best soil for potato, today's gold price, and potato prices" },
+          "response": {
+            "outcome": { "status": "partially_answered", "cause": null, "confidence": 74 },
+            "historyText": "Potato likes well-drained sandy loam. Cannot help with gold prices. Which district for potato prices?",
+            "content": [
+              { "type": "openui", "lines": [
+                "root = Stack([t, c])",
+                "t = TextContent(\"Potato soil\", \"large-heavy\")",
+                "c = Callout(\"Potato grows best in well-drained sandy loam with pH 5.2 to 6.4.\", \"success\")"
+              ] },
+              { "type": "refusal", "text": "I cannot help with gold prices." },
+              { "type": "openui", "lines": [
+                "root = Stack([q, form])",
+                "q = TextContent(\"Which district should I check potato prices for?\", \"body\")",
+                "form = Form(\"potato_district\", acts, [c1])",
+                "c1 = FormControl(\"District\", Select(\"district\", [\"Nashik\", \"Pune\", \"Ahmednagar\", \"Satara\"], \"Choose district\"))",
+                "acts = Buttons([go], \"row\")",
+                "go = Button(\"Check potato prices\", @ToAssistant(\"Check potato prices\"), \"primary\")"
+              ] }
+            ],
+            "sources": [{ "id": "src_1", "name": "ICAR Potato Guide", "kind": "document" }]
+          }
+        },
+        {
+          "user": { "text": "Check potato prices", "formValues": { "district": "Nashik" } },
+          "response": {
+            "outcome": { "status": "unavailable", "cause": "provider_unavailable", "confidence": 0 },
+            "historyText": "The market-price service is unavailable. Try again shortly.",
+            "openui": [
+              "root = Stack([alert, acts])",
+              "alert = Callout(\"The market-price service is unavailable right now. Please try again shortly.\", \"danger\")",
+              "acts = Buttons([retry], \"row\")",
+              "retry = Button(\"Retry\", @ToAssistant(\"Check potato prices\"), \"primary\")"
+            ],
+            "error": { "code": "provider_unavailable", "message": "The required market-price Provider is unavailable.", "retryable": true, "retryAfterSeconds": 30 },
+            "sources": []
+          }
+        }
+      ]
+    }
+  ]
+}
