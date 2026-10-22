@@ -38,7 +38,834 @@
   },
   "scenarios": [
     {
+      "id": "S14",
+      "group": "Nested question",
+      "title": "Livestock check: nested questions (cattle, collar, goats, poultry)",
+      "kind": "multi",
+      "uiPatterns": [
+        "Nested questions",
+        "RadioGroup (built-in)",
+        "Conditional render ($vars)",
+        "Callout",
+        "Steps",
+        "Table"
+      ],
+      "turns": [
+        {
+          "user": {
+            "text": "Check my livestock health"
+          },
+          "response": {
+            "outcome": {
+              "status": "requires_input",
+              "cause": null,
+              "confidence": 91
+            },
+            "historyText": "Asked what animals you keep, then follow-up questions for that animal (herd size, collar, yes/no checks).",
+            "openui": [
+              "root = Stack([hdr, intro, q1, c2, c3, c4, c5, g2, g3, g4, p2, p3, p4, p5, aC, aG, aP])",
+              "$animal = \"\"",
+              "$cattle_herd = \"\"",
+              "$collar = \"\"",
+              "$collar_called = \"\"",
+              "$collar_reason = \"\"",
+              "$goat_flock = \"\"",
+              "$ppr_vaccinated = \"\"",
+              "$poultry_flock = \"\"",
+              "$sudden_deaths = \"\"",
+              "$many_affected = \"\"",
+              "hdr = TextContent(\"Livestock health check\", \"large-heavy\")",
+              "intro = TextContent(\"Answer a few questions. New questions appear as you answer.\", \"muted\")",
+              "q1 = FormControl(\"What do you keep?\", RadioGroup(\"animal\", [q1_0, q1_1, q1_2], null, null, $animal))",
+              "q1_0 = RadioItem(\"Cattle\", \"Cows and buffalo\", \"Cattle\")",
+              "q1_1 = RadioItem(\"Goats\", \"Goats and sheep\", \"Goats\")",
+              "q1_2 = RadioItem(\"Poultry\", \"Hens and ducks\", \"Poultry\")",
+              "c2 = $animal == \"Cattle\" ? c2a : null",
+              "c2a = FormControl(\"How many animals do you have?\", RadioGroup(\"cattle_herd\", [c2a_0, c2a_1, c2a_2], null, null, $cattle_herd))",
+              "c2a_0 = RadioItem(\"1 to 5\", \"Small household herd\", \"1 to 5\")",
+              "c2a_1 = RadioItem(\"6 to 20\", \"Medium herd\", \"6 to 20\")",
+              "c2a_2 = RadioItem(\"More than 20\", \"Large herd or dairy\", \"More than 20\")",
+              "c3 = ($animal == \"Cattle\" && $cattle_herd != \"\") ? c3a : null",
+              "c3a = FormControl(\"Do your animals wear a health collar?\", RadioGroup(\"collar\", [c3a_0, c3a_1], null, null, $collar))",
+              "c3a_0 = RadioItem(\"Yes\", \"\", \"Yes\")",
+              "c3a_1 = RadioItem(\"No\", \"\", \"No\")",
+              "c4 = ($animal == \"Cattle\" && $cattle_herd != \"\" && $collar == \"Yes\") ? c4a : (($animal == \"Cattle\" && $cattle_herd != \"\" && $collar == \"No\") ? c4b : null)",
+              "c4a = FormControl(\"Has the collar called you in the last 3 days?\", RadioGroup(\"collar_called\", [c4a_0, c4a_1], null, null, $collar_called))",
+              "c4a_0 = RadioItem(\"Yes\", \"\", \"Yes\")",
+              "c4a_1 = RadioItem(\"No\", \"\", \"No\")",
+              "c4b = Callout(\"A collar tracks cow health and tells you when a cow is ready for breeding. Ask your project team how to get one.\", \"info\")",
+              "c5 = ($animal == \"Cattle\" && $cattle_herd != \"\" && $collar == \"Yes\" && $collar_called == \"Yes\") ? c5a : null",
+              "c5a = FormControl(\"What did the call say?\", RadioGroup(\"collar_reason\", [c5a_0, c5a_1, c5a_2], null, null, $collar_reason))",
+              "c5a_0 = RadioItem(\"Ready for insemination\", \"\", \"Ready for insemination\")",
+              "c5a_1 = RadioItem(\"Doctor needed\", \"\", \"Doctor needed\")",
+              "c5a_2 = RadioItem(\"Not sure\", \"\", \"Not sure\")",
+              "g2 = $animal == \"Goats\" ? g2a : null",
+              "g2a = FormControl(\"How many goats or sheep?\", RadioGroup(\"goat_flock\", [g2a_0, g2a_1, g2a_2], null, null, $goat_flock))",
+              "g2a_0 = RadioItem(\"1 to 10\", \"\", \"1 to 10\")",
+              "g2a_1 = RadioItem(\"11 to 50\", \"\", \"11 to 50\")",
+              "g2a_2 = RadioItem(\"More than 50\", \"\", \"More than 50\")",
+              "g3 = ($animal == \"Goats\" && $goat_flock != \"\") ? g3a : null",
+              "g3a = FormControl(\"Were they vaccinated against PPR in the last year?\", RadioGroup(\"ppr_vaccinated\", [g3a_0, g3a_1], null, null, $ppr_vaccinated))",
+              "g3a_0 = RadioItem(\"Yes\", \"\", \"Yes\")",
+              "g3a_1 = RadioItem(\"No\", \"\", \"No\")",
+              "g4 = ($animal == \"Goats\" && $goat_flock != \"\" && $ppr_vaccinated == \"No\") ? g4a : null",
+              "g4a = Callout(\"Unvaccinated flocks are at risk. Vaccinate before the rains.\", \"warn\")",
+              "p2 = $animal == \"Poultry\" ? p2a : null",
+              "p2a = FormControl(\"How many birds?\", RadioGroup(\"poultry_flock\", [p2a_0, p2a_1, p2a_2], null, null, $poultry_flock))",
+              "p2a_0 = RadioItem(\"1 to 50\", \"\", \"1 to 50\")",
+              "p2a_1 = RadioItem(\"51 to 200\", \"\", \"51 to 200\")",
+              "p2a_2 = RadioItem(\"More than 200\", \"\", \"More than 200\")",
+              "p3 = ($animal == \"Poultry\" && $poultry_flock != \"\") ? p3a : null",
+              "p3a = FormControl(\"Have any birds died suddenly this week?\", RadioGroup(\"sudden_deaths\", [p3a_0, p3a_1], null, null, $sudden_deaths))",
+              "p3a_0 = RadioItem(\"Yes\", \"\", \"Yes\")",
+              "p3a_1 = RadioItem(\"No\", \"\", \"No\")",
+              "p4 = ($animal == \"Poultry\" && $poultry_flock != \"\" && $sudden_deaths == \"Yes\") ? p4a : null",
+              "p4a = FormControl(\"Are more than 5 birds affected?\", RadioGroup(\"many_affected\", [p4a_0, p4a_1], null, null, $many_affected))",
+              "p4a_0 = RadioItem(\"Yes\", \"\", \"Yes\")",
+              "p4a_1 = RadioItem(\"No\", \"\", \"No\")",
+              "p5 = ($animal == \"Poultry\" && $poultry_flock != \"\" && $sudden_deaths == \"Yes\" && $many_affected == \"Yes\") ? p5a : null",
+              "p5a = Callout(\"Many birds are affected. Keep sick birds apart and call the animal doctor today.\", \"danger\")",
+              "aC = ($animal == \"Cattle\" && $cattle_herd != \"\" && $collar != \"\") ? aCb : null",
+              "aCb = Buttons([bC], \"row\")",
+              "bC = Button(\"Get cattle advice\", @ToAssistant(\"Get cattle advice\"), \"primary\")",
+              "aG = ($animal == \"Goats\" && $goat_flock != \"\" && $ppr_vaccinated != \"\") ? aGb : null",
+              "aGb = Buttons([bG], \"row\")",
+              "bG = Button(\"Get goat advice\", @ToAssistant(\"Get goat advice\"), \"primary\")",
+              "aP = ($animal == \"Poultry\" && $poultry_flock != \"\" && $sudden_deaths != \"\") ? aPb : null",
+              "aPb = Buttons([bP], \"row\")",
+              "bP = Button(\"Get poultry advice\", @ToAssistant(\"Get poultry advice\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "Animal Husbandry Guidelines",
+                "kind": "document"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Get cattle advice",
+            "formValues": {
+              "animal": "Cattle",
+              "cattle_herd": "6 to 20",
+              "collar": "Yes",
+              "collar_called": "Yes",
+              "collar_reason": "Ready for insemination"
+            }
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 85
+            },
+            "historyText": "The collar flagged a cow as ready for insemination: call the inseminator today.",
+            "openui": [
+              "root = Stack([ok, stat, steps, note, acts])",
+              "ok = Callout(\"Your collar has flagged a cow as ready for insemination.\", \"success\")",
+              "stat = StatCard(\"Next step\", \"Call the inseminator today\", \"Heat lasts only part of a day, so do not wait\")",
+              "steps = Steps([s1, s2, s3])",
+              "s1 = Step(\"Note the time\", \"Write down when the collar called you.\")",
+              "s2 = Step(\"Keep her calm\", \"Keep her apart from the herd and give clean water.\")",
+              "s3 = Step(\"Call for insemination\", \"Ask your nearest animal husbandry centre for the inseminator.\")",
+              "note = Callout(\"Sample guidance for UI testing. Follow your veterinarian's advice.\", \"info\")",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"What are the signs of heat?\", @ToAssistant(\"What are the signs of heat?\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "Animal Husbandry Guidelines",
+                "kind": "document"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "What are the signs of heat?"
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 80
+            },
+            "historyText": "Signs of heat: restlessness, mounting, less milk, clear mucus.",
+            "openui": [
+              "root = Stack([tbl, note, acts])",
+              "tbl = Table([\"Sign\", \"What you see\"], [[\"Restless\", \"Moves more and calls often\"], [\"Mounting\", \"Mounts or stands for other cows\"], [\"Less milk\", \"A drop in milk for a day\"], [\"Mucus\", \"Clear discharge\"]])",
+              "note = Callout(\"A collar can pick these up at night, when you may not see them.\", \"info\")",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"Find an animal doctor near me\", @ToAssistant(\"Find an animal doctor near me\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "Animal Husbandry Guidelines",
+                "kind": "document"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Find an animal doctor near me"
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 72
+            },
+            "historyText": "Nearest animal doctor: Veterinary dispensary Nashik Road, about 4 km away (sample).",
+            "openui": [
+              "root = Stack([stat, tbl, note])",
+              "stat = StatCard(\"Nearest\", \"Veterinary dispensary, Nashik Road\", \"About 4 km from Nashik\")",
+              "tbl = Table([\"Centre\", \"Distance\", \"Hours\"], [[\"Veterinary dispensary, Nashik Road\", \"4 km\", \"9 am to 5 pm\"], [\"Animal husbandry centre, Deolali\", \"9 km\", \"10 am to 5 pm\"], [\"Polyclinic, Sinnar\", \"28 km\", \"9 am to 6 pm\"]])",
+              "note = Callout(\"Sample entries for UI testing. Emergency cases: call before you travel.\", \"warn\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "Animal Husbandry Locator",
+                "kind": "provider"
+              }
+            ]
+          }
+        },
+        {
+          "from": "Check my livestock health",
+          "user": {
+            "text": "Get goat advice",
+            "formValues": {
+              "animal": "Goats",
+              "goat_flock": "11 to 50",
+              "ppr_vaccinated": "No"
+            }
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 78
+            },
+            "historyText": "Vaccinate the flock against PPR before the rains.",
+            "openui": [
+              "root = Stack([stat, tbl, note])",
+              "stat = StatCard(\"Priority\", \"Vaccinate against PPR\", \"Before the rainy season\")",
+              "tbl = Table([\"Check\", \"Action\"], [[\"Flock size\", \"11 to 50 animals: plan one vaccination visit\"], [\"PPR vaccine\", \"Not given in the last year: give it now\"], [\"New animals\", \"Keep new animals apart for 2 weeks\"]])",
+              "note = Callout(\"Sample guidance for UI testing. Ask your veterinarian for the schedule.\", \"info\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "Animal Husbandry Guidelines",
+                "kind": "document"
+              }
+            ]
+          }
+        },
+        {
+          "from": "Check my livestock health",
+          "user": {
+            "text": "Get poultry advice",
+            "formValues": {
+              "animal": "Poultry",
+              "poultry_flock": "51 to 200",
+              "sudden_deaths": "Yes",
+              "many_affected": "Yes"
+            }
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 76
+            },
+            "historyText": "Many birds affected by sudden deaths: separate sick birds and call the animal doctor today.",
+            "openui": [
+              "root = Stack([alert, steps, note])",
+              "alert = Callout(\"Sudden deaths in many birds can mean a serious disease. Call the animal doctor today.\", \"danger\")",
+              "steps = Steps([s1, s2, s3])",
+              "s1 = Step(\"Separate\", \"Move sick birds away from the healthy ones.\")",
+              "s2 = Step(\"Do not sell or move birds\", \"This helps stop the disease spreading.\")",
+              "s3 = Step(\"Call the animal doctor\", \"Tell them how many birds died and when.\")",
+              "note = Callout(\"Sample guidance for UI testing.\", \"info\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "Animal Husbandry Guidelines",
+                "kind": "document"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "S07",
+      "group": "Mandi",
+      "title": "Mandi price with chart and nearby mandi comparison",
+      "kind": "multi",
+      "uiPatterns": [
+        "StatCard",
+        "BarChart",
+        "Table",
+        "Buttons",
+        "Callout"
+      ],
+      "attributes": {
+        "location": {
+          "region": "IN-GJ",
+          "area": "Anand",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [
+              72.93,
+              22.56
+            ]
+          }
+        }
+      },
+      "turns": [
+        {
+          "user": {
+            "text": "What is the wheat price at Anand mandi this week?"
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 92
+            },
+            "historyText": "Wheat is Rs 2,275 per quintal at Anand mandi.",
+            "openui": [
+              "root = Stack([hdr, stat, chart, tbl, note, acts])",
+              "hdr = TextContent(\"Wheat prices: Anand mandi, this week\", \"large-heavy\")",
+              "stat = StatCard(\"Modal price today\", \"₹2,275 / quintal\", \"+₹25 vs yesterday\")",
+              "chart = BarChart(\"Daily modal price\", [\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\"], [2210, 2230, 2250, 2250, 2275], \"₹/quintal\")",
+              "tbl = Table([\"Mandi\", \"Min\", \"Modal\", \"Max\"], [[\"Anand\", \"2,150\", \"2,275\", \"2,400\"], [\"Nadiad\", \"2,120\", \"2,240\", \"2,380\"], [\"Vadodara\", \"2,140\", \"2,260\", \"2,410\"]])",
+              "note = TextContent(\"Source: Agmarknet. Sample values for UI testing.\", \"muted\")",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"Show last 4 weeks\", @ToAssistant(\"Show last 4 weeks\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "Agmarknet",
+                "kind": "provider"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Show last 4 weeks"
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 90
+            },
+            "historyText": "Wheat at Anand rose from Rs 2,150 to Rs 2,275 per quintal over 4 weeks.",
+            "openui": [
+              "root = Stack([hdr, stat, chart, note, acts])",
+              "hdr = TextContent(\"Wheat: last 4 weeks at Anand\", \"large-heavy\")",
+              "stat = StatCard(\"4-week change\", \"+₹125\", \"+5.8% since 4 weeks ago\")",
+              "chart = BarChart(\"Weekly modal price\", [\"Wk 1\", \"Wk 2\", \"Wk 3\", \"Wk 4\"], [2150, 2190, 2230, 2275], \"₹/quintal\")",
+              "note = TextContent(\"Source: Agmarknet. Sample values for UI testing.\", \"muted\")",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"Should I sell now or wait?\", @ToAssistant(\"Should I sell now or wait?\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "Agmarknet",
+                "kind": "provider"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Should I sell now or wait?"
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 62
+            },
+            "historyText": "I cannot predict prices. Prices rose four weeks in a row; consider your storage and cash needs.",
+            "openui": [
+              "root = Stack([warn, tbl, acts])",
+              "warn = Callout(\"I cannot predict prices. Prices have risen 4 weeks in a row, but that can reverse.\", \"warn\")",
+              "tbl = Table([\"Consider\", \"Why\"], [[\"Storage\", \"Can you store safely without moisture or pest loss?\"], [\"Cash need\", \"Do you need money before the next harvest?\"], [\"Nearby mandis\", \"A different mandi may pay more after transport cost\"]])",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"Show nearby mandi prices for wheat\", @ToAssistant(\"Show nearby mandi prices for wheat\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "Agmarknet",
+                "kind": "provider"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Show nearby mandi prices for wheat"
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 85
+            },
+            "historyText": "Ahmedabad pays the most at Rs 2,310, Anand Rs 2,275.",
+            "openui": [
+              "root = Stack([tbl, note])",
+              "tbl = Table([\"Mandi\", \"Distance\", \"Modal price (₹/quintal)\"], [[\"Anand\", \"0 km\", \"2,275\"], [\"Nadiad\", \"22 km\", \"2,240\"], [\"Kheda\", \"35 km\", \"2,230\"], [\"Vadodara\", \"40 km\", \"2,260\"], [\"Ahmedabad\", \"70 km\", \"2,310\"]])",
+              "note = Callout(\"Transport cost can cancel a small price gap. Sample values for UI testing.\", \"info\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "Agmarknet",
+                "kind": "provider"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "S10",
+      "group": "Mandi",
+      "title": "Outcome states: partially_answered with refusal and question, then provider outage",
+      "kind": "multi",
+      "uiPatterns": [
+        "mixed content (text, refusal, text)",
+        "Select",
+        "Callout (danger)",
+        "error object",
+        "Retry",
+        "StatCard",
+        "Table"
+      ],
+      "turns": [
+        {
+          "user": {
+            "text": "Best soil for potato, today's gold price, and potato prices"
+          },
+          "response": {
+            "outcome": {
+              "status": "partially_answered",
+              "cause": null,
+              "confidence": 74
+            },
+            "historyText": "Potato likes well-drained sandy loam. Cannot help with gold prices. Which district for potato prices?",
+            "content": [
+              {
+                "type": "openui",
+                "lines": [
+                  "root = Stack([t, c])",
+                  "t = TextContent(\"Potato soil\", \"large-heavy\")",
+                  "c = Callout(\"Potato grows best in well-drained sandy loam with pH 5.2 to 6.4.\", \"success\")"
+                ]
+              },
+              {
+                "type": "refusal",
+                "text": "I cannot help with gold prices."
+              },
+              {
+                "type": "openui",
+                "lines": [
+                  "root = Stack([q, form])",
+                  "q = TextContent(\"Which district should I check potato prices for?\", \"body\")",
+                  "form = Form(\"potato_district\", acts, [c1])",
+                  "c1 = FormControl(\"District\", Select(\"district\", [\"Nashik\", \"Pune\", \"Ahmednagar\", \"Satara\"], \"Choose district\"))",
+                  "acts = Buttons([go], \"row\")",
+                  "go = Button(\"Check potato prices\", @ToAssistant(\"Check potato prices\"), \"primary\")"
+                ]
+              }
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "ICAR Potato Guide",
+                "kind": "document"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Check potato prices",
+            "formValues": {
+              "district": "Nashik"
+            }
+          },
+          "response": {
+            "outcome": {
+              "status": "unavailable",
+              "cause": "provider_unavailable",
+              "confidence": 0
+            },
+            "historyText": "The market-price service is unavailable. Try again shortly.",
+            "openui": [
+              "root = Stack([alert, acts])",
+              "alert = Callout(\"The market-price service is unavailable right now. Please try again shortly.\", \"danger\")",
+              "acts = Buttons([retry, last], \"row\")",
+              "retry = Button(\"Retry\", @ToAssistant(\"Check potato prices\"), \"primary\")",
+              "last = Button(\"Show last known price\", @ToAssistant(\"Show last known potato price\"), \"secondary\")"
+            ],
+            "error": {
+              "code": "provider_unavailable",
+              "message": "The required market-price Provider is unavailable.",
+              "retryable": true,
+              "retryAfterSeconds": 30
+            },
+            "sources": []
+          }
+        },
+        {
+          "user": {
+            "text": "Show last known potato price"
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 58
+            },
+            "historyText": "Last saved potato price for Nashik was Rs 1,850 per quintal; the live service is still unavailable.",
+            "openui": [
+              "root = Stack([warn, stat, acts])",
+              "warn = Callout(\"Showing the last saved price. The live market-price service is still unavailable.\", \"warn\")",
+              "stat = StatCard(\"Last known modal price\", \"₹1,850 / quintal\", \"Nashik, saved copy from yesterday\")",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"Which district pays the best?\", @ToAssistant(\"Which district pays the best?\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "Agmarknet saved copy",
+                "kind": "provider"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Which district pays the best?"
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 66
+            },
+            "historyText": "Pune was highest at Rs 1,920 per quintal in the saved copy.",
+            "openui": [
+              "root = Stack([tbl, note])",
+              "tbl = Table([\"District\", \"Modal price (₹/quintal)\"], [[\"Pune\", \"1,920\"], [\"Satara\", \"1,880\"], [\"Nashik\", \"1,850\"], [\"Ahmednagar\", \"1,790\"]])",
+              "note = Callout(\"Saved prices from yesterday, sample values for UI testing.\", \"info\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "Agmarknet saved copy",
+                "kind": "provider"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "S11",
+      "group": "Weather",
+      "title": "Weather forecast, spray window, then weather alert signup",
+      "kind": "multi",
+      "uiPatterns": [
+        "StatCard",
+        "BarChart",
+        "Table",
+        "Callout",
+        "Form",
+        "Select",
+        "Input"
+      ],
+      "turns": [
+        {
+          "user": {
+            "text": "What is the weather forecast for the next 5 days?"
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 91
+            },
+            "historyText": "Next 5 days in Nashik: dry on Tuesday, heavy rain likely Thursday (18 mm).",
+            "openui": [
+              "root = Stack([hdr, stat, chart, tbl, note, acts])",
+              "hdr = TextContent(\"Nashik: 5-day forecast\", \"large-heavy\")",
+              "stat = StatCard(\"Rain expected this week\", \"28 mm\", \"Heaviest on Thursday\")",
+              "chart = BarChart(\"Forecast rainfall\", [\"Tue\", \"Wed\", \"Thu\", \"Fri\", \"Sat\"], [0, 4, 18, 6, 0], \"mm\")",
+              "tbl = Table([\"Day\", \"Max / Min °C\", \"Rain chance\", \"Wind km/h\"], [[\"Tue 20 Oct\", \"32 / 19\", \"5%\", \"8\"], [\"Wed 21 Oct\", \"31 / 20\", \"30%\", \"10\"], [\"Thu 22 Oct\", \"28 / 21\", \"85%\", \"18\"], [\"Fri 23 Oct\", \"29 / 20\", \"50%\", \"12\"], [\"Sat 24 Oct\", \"31 / 19\", \"10%\", \"7\"]])",
+              "note = TextContent(\"Source: IMD district forecast. Sample values for UI testing.\", \"muted\")",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"Is it safe to spray tomorrow?\", @ToAssistant(\"Is it safe to spray tomorrow?\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "IMD District Forecast",
+                "kind": "provider"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Is it safe to spray tomorrow?"
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 88
+            },
+            "historyText": "Tomorrow is dry with light wind: spray early morning or evening, not midday.",
+            "openui": [
+              "root = Stack([ok, tbl, warn, acts])",
+              "ok = Callout(\"Tomorrow (Tue) is dry with light wind. Good for spraying in the morning.\", \"success\")",
+              "tbl = Table([\"Time window\", \"Wind\", \"Verdict\"], [[\"6 to 9 am\", \"5 km/h\", \"Best\"], [\"12 to 3 pm\", \"8 km/h\", \"Avoid: hot, spray dries fast\"], [\"4 to 7 pm\", \"8 km/h\", \"Good\"]])",
+              "warn = Callout(\"Heavy rain is likely on Thursday. Do not spray on Wednesday evening: rain may wash it off.\", \"warn\")",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"Set a weather alert\", @ToAssistant(\"Set a weather alert\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "IMD District Forecast",
+                "kind": "provider"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Set a weather alert"
+          },
+          "response": {
+            "outcome": {
+              "status": "requires_input",
+              "cause": null,
+              "confidence": 90
+            },
+            "historyText": "Asked which alert and which mobile number to use.",
+            "openui": [
+              "root = Stack([hdr, form])",
+              "hdr = TextContent(\"Get a weather alert by SMS\", \"large-heavy\")",
+              "form = Form(\"weather_alert\", acts, [c1, c2])",
+              "c1 = FormControl(\"Alert me about\", Select(\"alert_type\", [\"Heavy rain\", \"Heat wave\", \"Frost\", \"Strong wind\"], \"Choose alert\"))",
+              "c2 = FormControl(\"Mobile number\", Input(\"mobile\", \"10-digit number\", \"tel\", {required: true, minLength: 10}))",
+              "acts = Buttons([go], \"row\")",
+              "go = Button(\"Save alert\", @ToAssistant(\"Save my weather alert\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "IMD District Forecast",
+                "kind": "provider"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Save my weather alert",
+            "formValues": {
+              "alert_type": "Heavy rain",
+              "mobile": "9876543210"
+            }
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 85
+            },
+            "historyText": "Heavy rain alert saved for Nashik by SMS.",
+            "openui": [
+              "root = Stack([ok, tbl, note])",
+              "ok = Callout(\"Alert saved: you will get an SMS before heavy rain in Nashik.\", \"success\")",
+              "tbl = Table([\"Setting\", \"Value\"], [[\"Alert\", \"Heavy rain\"], [\"Area\", \"Nashik\"], [\"Notify by\", \"SMS to XXXXXX3210\"], [\"Checked\", \"Every 6 hours\"]])",
+              "note = Callout(\"Demo only: the mock stores nothing.\", \"info\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "IMD District Forecast",
+                "kind": "provider"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "S12",
+      "group": "Weather",
+      "title": "Weather map: rain across Maharashtra, then near my farm",
+      "kind": "multi",
+      "uiPatterns": [
+        "Map",
+        "MapMarker",
+        "BarChart",
+        "Table",
+        "Callout",
+        "Steps"
+      ],
+      "turns": [
+        {
+          "user": {
+            "text": "Show the rain map for Maharashtra"
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 86
+            },
+            "historyText": "Rain map: heaviest in Mumbai (42 mm), light in Nagpur (2 mm).",
+            "openui": [
+              "root = Stack([hdr, map, key, note, acts])",
+              "hdr = TextContent(\"Maharashtra: expected rain in the next 24 hours\", \"large-heavy\")",
+              "map = Map([75.3, 19.2], 6, [m1, m2, m3, m4, m5, m6], \"Circle colour shows how heavy the rain is\")",
+              "m1 = MapMarker(\"Mumbai\", 72.8777, 19.076, \"42 mm\", \"danger\")",
+              "m2 = MapMarker(\"Kolhapur\", 74.2433, 16.705, \"25 mm\", \"warn\")",
+              "m3 = MapMarker(\"Pune\", 73.8567, 18.5204, \"18 mm\", \"warn\")",
+              "m4 = MapMarker(\"Nashik\", 73.7898, 19.9975, \"12 mm\", \"warn\")",
+              "m5 = MapMarker(\"Sambhajinagar\", 75.3433, 19.8762, \"6 mm\", \"info\")",
+              "m6 = MapMarker(\"Nagpur\", 79.0882, 21.1458, \"2 mm\", \"success\")",
+              "key = Table([\"Colour\", \"Meaning\"], [[\"Red\", \"Heavy: over 30 mm\"], [\"Amber\", \"Moderate: 10 to 30 mm\"], [\"Blue\", \"Light: 2 to 10 mm\"], [\"Green\", \"Little or none: under 2 mm\"]])",
+              "note = TextContent(\"Source: IMD district forecast. Sample values for UI testing.\", \"muted\")",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"Which district has the heaviest rain?\", @ToAssistant(\"Which district has the heaviest rain?\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "IMD District Forecast",
+                "kind": "provider"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Which district has the heaviest rain?"
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 88
+            },
+            "historyText": "Mumbai is expected to get the heaviest rain: 42 mm in 24 hours.",
+            "openui": [
+              "root = Stack([alert, chart, note, acts])",
+              "alert = Callout(\"Mumbai is expected to get the heaviest rain: 42 mm in 24 hours.\", \"danger\")",
+              "chart = BarChart(\"Expected rain, next 24 hours\", [\"Mumbai\", \"Kolhapur\", \"Pune\", \"Nashik\", \"Sambhajinagar\", \"Nagpur\"], [42, 25, 18, 12, 6, 2], \"mm\")",
+              "note = TextContent(\"Source: IMD district forecast. Sample values for UI testing.\", \"muted\")",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"Show rain near my farm\", @ToAssistant(\"Show rain near my farm\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "IMD District Forecast",
+                "kind": "provider"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Show rain near my farm"
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 84
+            },
+            "historyText": "Around Nashik: 5 to 28 mm expected, heaviest near Igatpuri.",
+            "openui": [
+              "root = Stack([hdr, map, tbl, acts])",
+              "hdr = TextContent(\"Rain around Nashik, next 24 hours\", \"large-heavy\")",
+              "map = Map([73.8, 19.95], 9, [m1, m2, m3, m4, m5], \"Your location is marked Nashik\")",
+              "m1 = MapMarker(\"Nashik\", 73.7898, 19.9975, \"12 mm\", \"warn\")",
+              "m2 = MapMarker(\"Sinnar\", 73.9985, 19.8457, \"9 mm\", \"info\")",
+              "m3 = MapMarker(\"Igatpuri\", 73.5614, 19.6958, \"28 mm\", \"warn\")",
+              "m4 = MapMarker(\"Niphad\", 74.113, 20.0833, \"5 mm\", \"info\")",
+              "m5 = MapMarker(\"Dindori\", 73.8331, 20.2, \"15 mm\", \"warn\")",
+              "tbl = Table([\"Place\", \"Expected rain\", \"Wind km/h\"], [[\"Nashik\", \"12 mm\", \"10\"], [\"Sinnar\", \"9 mm\", \"8\"], [\"Igatpuri\", \"28 mm\", \"14\"], [\"Niphad\", \"5 mm\", \"9\"], [\"Dindori\", \"15 mm\", \"11\"]])",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"Should I delay spraying?\", @ToAssistant(\"Should I delay spraying?\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "IMD District Forecast",
+                "kind": "provider"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Should I delay spraying?"
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 80
+            },
+            "historyText": "Delay spraying today: 10 mm of rain is due this evening; tomorrow evening is the best window.",
+            "openui": [
+              "root = Stack([warn, tbl, steps])",
+              "warn = Callout(\"About 12 mm of rain is expected around Nashik. Spraying today may be washed off.\", \"warn\")",
+              "tbl = Table([\"When\", \"Rain\", \"Advice\"], [[\"Today evening\", \"10 mm\", \"Do not spray\"], [\"Tomorrow morning\", \"2 mm\", \"Spray after 9 am if leaves are dry\"], [\"Tomorrow evening\", \"0 mm\", \"Good window\"]])",
+              "steps = Steps([s1, s2])",
+              "s1 = Step(\"Wait for dry leaves\", \"Spray when leaves are dry and no rain is due for 6 hours.\")",
+              "s2 = Step(\"Check again\", \"Look at the forecast again tomorrow morning before you decide.\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "IMD District Forecast",
+                "kind": "provider"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
       "id": "S01",
+      "group": "Scheme",
       "title": "PM-KISAN registration form (Hindi)",
       "kind": "multi",
       "uiPatterns": [
@@ -191,6 +1018,7 @@
     },
     {
       "id": "S02",
+      "group": "Scheme",
       "title": "PM-KISAN eligibility check (question form, then verdict)",
       "kind": "multi",
       "uiPatterns": [
@@ -327,6 +1155,7 @@
     },
     {
       "id": "S03",
+      "group": "Scheme",
       "title": "PMFBY crop insurance enrolment form",
       "kind": "multi",
       "uiPatterns": [
@@ -476,6 +1305,7 @@
     },
     {
       "id": "S04",
+      "group": "Scheme",
       "title": "Scheme comparison: PMFBY vs weather-based insurance",
       "kind": "multi",
       "uiPatterns": [
@@ -602,7 +1432,722 @@
       ]
     },
     {
+      "id": "S09",
+      "group": "Scheme",
+      "title": "PM-KISAN installment status (lookup form, then status with e-KYC alert)",
+      "kind": "multi",
+      "uiPatterns": [
+        "Form",
+        "Table",
+        "Callout (danger)",
+        "Steps"
+      ],
+      "turns": [
+        {
+          "user": {
+            "text": "Where is my PM-KISAN installment?"
+          },
+          "response": {
+            "outcome": {
+              "status": "requires_input",
+              "cause": null,
+              "confidence": 92
+            },
+            "historyText": "Asked for the registered mobile number to look up status.",
+            "openui": [
+              "root = Stack([hdr, form])",
+              "hdr = TextContent(\"Check PM-KISAN installment status\", \"large-heavy\")",
+              "form = Form(\"pmkisan_status\", acts, [c1])",
+              "c1 = FormControl(\"Registered mobile number\", Input(\"mobile\", \"10-digit number\", \"tel\", {required: true, minLength: 10}))",
+              "acts = Buttons([go], \"row\")",
+              "go = Button(\"Check status\", @ToAssistant(\"Check status for PM-KISAN\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "PM-KISAN Portal",
+                "kind": "provider"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Check status for PM-KISAN",
+            "formValues": {
+              "mobile": "9876543210"
+            }
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 87
+            },
+            "historyText": "Two installments credited, third on hold because e-KYC is pending.",
+            "openui": [
+              "root = Stack([alert, tbl, steps, acts])",
+              "alert = Callout(\"Your next installment is on hold: e-KYC is pending.\", \"danger\")",
+              "tbl = Table([\"Installment\", \"Period\", \"Amount\", \"Status\"], [[\"1\", \"Apr to Jul 2026\", \"₹2,000\", \"Credited\"], [\"2\", \"Aug to Nov 2026\", \"₹2,000\", \"On hold: e-KYC pending\"], [\"3\", \"Dec 2026 to Mar 2027\", \"₹2,000\", \"Not due\"]])",
+              "steps = Steps([s1, s2])",
+              "s1 = Step(\"Do e-KYC\", \"Use Aadhaar OTP on the PM-KISAN portal, or biometric at a nearby CSC.\")",
+              "s2 = Step(\"Wait for release\", \"Held installments are usually released after verification.\")",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"How do I do e-KYC on my phone?\", @ToAssistant(\"How do I do e-KYC on my phone?\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "PM-KISAN Portal",
+                "kind": "provider"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "How do I do e-KYC on my phone?"
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 86
+            },
+            "historyText": "Open the portal, enter Aadhaar and captcha, verify the OTP, then check status.",
+            "openui": [
+              "root = Stack([steps, note, acts])",
+              "steps = Steps([s1, s2, s3, s4])",
+              "s1 = Step(\"Open the portal\", \"Go to the PM-KISAN portal and choose e-KYC.\")",
+              "s2 = Step(\"Enter Aadhaar\", \"Type your Aadhaar number and the captcha.\")",
+              "s3 = Step(\"Verify OTP\", \"Enter the OTP sent to your Aadhaar-linked mobile.\")",
+              "s4 = Step(\"Check status\", \"Return to the status page. The hold is usually lifted after verification.\")",
+              "note = Callout(\"Never share your OTP or bank PIN with anyone.\", \"warn\")",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"Update my bank account details\", @ToAssistant(\"Update my bank account details\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "PM-KISAN Portal",
+                "kind": "provider"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Update my bank account details"
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 79
+            },
+            "historyText": "Check that your bank account is linked to Aadhaar, then update details at the bank or CSC.",
+            "openui": [
+              "root = Stack([steps, note])",
+              "steps = Steps([s1, s2, s3])",
+              "s1 = Step(\"Check Aadhaar link\", \"Ask your bank if the account is linked to your Aadhaar.\")",
+              "s2 = Step(\"Update at the bank\", \"Fill the Aadhaar seeding form at your branch.\")",
+              "s3 = Step(\"Re-check status\", \"After a few days, check the installment status again.\")",
+              "note = Callout(\"Sample guidance for UI testing.\", \"info\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "PM-KISAN Portal",
+                "kind": "provider"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "S13",
+      "group": "Scheme",
+      "title": "Scheme eligibility form tree: pick one of four schemes, get its form",
+      "kind": "multi",
+      "uiPatterns": [
+        "Form tree",
+        "Buttons (@Set)",
+        "Conditional render ($scheme)",
+        "Form",
+        "Input",
+        "Select",
+        "StatCard",
+        "Table"
+      ],
+      "turns": [
+        {
+          "user": {
+            "text": "Check my scheme eligibility"
+          },
+          "response": {
+            "outcome": {
+              "status": "requires_input",
+              "cause": null,
+              "confidence": 92
+            },
+            "historyText": "Showed four schemes (PM-KISAN, PMFBY, Kisan Credit Card, PM-KUSUM), each with its own eligibility form.",
+            "openui": [
+              "root = Stack([hdr, intro, choices, tree])",
+              "$scheme = \"PM-KISAN\"",
+              "hdr = TextContent(\"Which scheme do you want to check?\", \"large-heavy\")",
+              "intro = TextContent(\"Pick a scheme. The form below changes to match it.\", \"muted\")",
+              "choices = Buttons([c1, c2, c3, c4], \"column\")",
+              "c1 = Button(\"PM-KISAN: income support\", @Set($scheme, \"PM-KISAN\"), $scheme == \"PM-KISAN\" ? \"primary\" : \"secondary\")",
+              "c2 = Button(\"PMFBY: crop insurance\", @Set($scheme, \"PMFBY\"), $scheme == \"PMFBY\" ? \"primary\" : \"secondary\")",
+              "c3 = Button(\"Kisan Credit Card: farm loan\", @Set($scheme, \"KCC\"), $scheme == \"KCC\" ? \"primary\" : \"secondary\")",
+              "c4 = Button(\"PM-KUSUM: solar pump\", @Set($scheme, \"PM-KUSUM\"), $scheme == \"PM-KUSUM\" ? \"primary\" : \"secondary\")",
+              "tree = $scheme == \"PM-KISAN\" ? fKisan : ($scheme == \"PMFBY\" ? fPmfby : ($scheme == \"KCC\" ? fKcc : fKusum))",
+              "fKisan = Form(\"elig_pmkisan\", actK, [k1, k2, k3, k4])",
+              "k1 = FormControl(\"Do you own cultivable land in your name?\", Select(\"owns_land\", [\"Yes\", \"No\"], \"Select\"))",
+              "k2 = FormControl(\"Land area (hectares)\", Input(\"land_ha\", \"e.g. 1.2\", \"number\", {required: true}))",
+              "k3 = FormControl(\"Did anyone in your family pay income tax last year?\", Select(\"income_tax\", [\"Yes\", \"No\"], \"Select\"))",
+              "k4 = FormControl(\"Is any family member a serving or retired government officer?\", Select(\"govt_job\", [\"Yes\", \"No\"], \"Select\"))",
+              "actK = Buttons([gK], \"row\")",
+              "gK = Button(\"Check eligibility\", @ToAssistant(\"Check PM-KISAN eligibility\"), \"primary\")",
+              "fPmfby = Form(\"elig_pmfby\", actP, [p1, p2, p3, p4, p5])",
+              "p1 = FormControl(\"Crop\", Select(\"crop\", [\"Wheat\", \"Gram\", \"Mustard\", \"Onion\", \"Cotton\"], \"Choose crop\"))",
+              "p2 = FormControl(\"Season\", Select(\"season\", [\"Kharif\", \"Rabi\"], \"Choose season\"))",
+              "p3 = FormControl(\"Area to insure (hectares)\", Input(\"area_ha\", \"0.8\", \"number\", {required: true}))",
+              "p4 = FormControl(\"Farmer type\", Select(\"farmer_type\", [\"Loanee farmer\", \"Non-loanee farmer\"], \"Choose\"))",
+              "p5 = FormControl(\"Sowing date\", Input(\"sowing_date\", \"\", \"date\", {required: true}))",
+              "actP = Buttons([gP], \"row\")",
+              "gP = Button(\"Check eligibility\", @ToAssistant(\"Check PMFBY eligibility\"), \"primary\")",
+              "fKcc = Form(\"elig_kcc\", actQ, [q1, q2, q3, q4])",
+              "q1 = FormControl(\"Land area (hectares)\", Input(\"land_ha\", \"e.g. 1.2\", \"number\", {required: true}))",
+              "q2 = FormControl(\"Main crop\", Select(\"main_crop\", [\"Wheat\", \"Rice\", \"Cotton\", \"Sugarcane\", \"Vegetables\"], \"Choose crop\"))",
+              "q3 = FormControl(\"Do you already have a farm loan?\", Select(\"existing_loan\", [\"Yes\", \"No\"], \"Select\"))",
+              "q4 = FormControl(\"Amount needed (₹)\", Input(\"loan_amount\", \"e.g. 60000\", \"number\", {required: true}))",
+              "actQ = Buttons([gQ], \"row\")",
+              "gQ = Button(\"Check eligibility\", @ToAssistant(\"Check Kisan Credit Card eligibility\"), \"primary\")",
+              "fKusum = Form(\"elig_kusum\", actU, [u1, u2, u3, u4])",
+              "u1 = FormControl(\"Do you own the land?\", Select(\"owns_land\", [\"Yes\", \"No\"], \"Select\"))",
+              "u2 = FormControl(\"Land area (hectares)\", Input(\"land_ha\", \"e.g. 2\", \"number\", {required: true}))",
+              "u3 = FormControl(\"Water source\", Select(\"water_source\", [\"Borewell\", \"Open well\", \"Canal\", \"None\"], \"Choose\"))",
+              "u4 = FormControl(\"Pump you use now\", Select(\"pump_now\", [\"Diesel pump\", \"Grid electric pump\", \"No pump\"], \"Choose\"))",
+              "actU = Buttons([gU], \"row\")",
+              "gU = Button(\"Check eligibility\", @ToAssistant(\"Check PM-KUSUM eligibility\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "Scheme Guidelines",
+                "kind": "document"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Check PM-KISAN eligibility",
+            "formValues": {
+              "owns_land": "Yes",
+              "land_ha": "1.2",
+              "income_tax": "No",
+              "govt_job": "No"
+            }
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 86
+            },
+            "historyText": "You are likely eligible for PM-KISAN.",
+            "openui": [
+              "root = Stack([stat, tbl, note, acts])",
+              "stat = StatCard(\"PM-KISAN\", \"Likely eligible\", \"Final approval is by your state verification\")",
+              "tbl = Table([\"Rule\", \"Your answer\", \"Status\"], [[\"Owns cultivable land\", \"Yes (1.2 ha)\", \"Meets\"], [\"Income tax payer in family\", \"No\", \"Meets\"], [\"Government officer in family\", \"No\", \"Meets\"]])",
+              "note = Callout(\"Sample result for UI testing, not a decision.\", \"info\")",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"Show other schemes I may qualify for\", @ToAssistant(\"Show other schemes I may qualify for\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "PM-KISAN Operational Guidelines",
+                "kind": "document"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Show other schemes I may qualify for"
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 78
+            },
+            "historyText": "You may also fit PMFBY and Kisan Credit Card; PM-KUSUM needs a water source.",
+            "openui": [
+              "root = Stack([hdr, tbl, note, acts])",
+              "hdr = TextContent(\"Other schemes for your profile\", \"large-heavy\")",
+              "tbl = Table([\"Scheme\", \"Likely fit\", \"Why\"], [[\"PMFBY crop insurance\", \"Likely\", \"You hold land and grow notified crops\"], [\"Kisan Credit Card\", \"Likely\", \"Land holder with a crop cycle\"], [\"PM-KUSUM solar pump\", \"Check\", \"Needs a water source on your land\"]])",
+              "note = Callout(\"Open the scheme list to fill the form for each one. Sample guidance for UI testing.\", \"info\")",
+              "acts = Buttons([b1, b2], \"column\")",
+              "b1 = Button(\"How do I apply for PM-KISAN?\", @ToAssistant(\"How do I apply for PM-KISAN?\"), \"primary\")",
+              "b2 = Button(\"Check another scheme\", @ToAssistant(\"Check my scheme eligibility\"), \"secondary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "Scheme Guidelines",
+                "kind": "document"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "How do I apply for PM-KISAN?"
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 90
+            },
+            "historyText": "Keep documents ready, register at the portal or a CSC, then complete e-KYC.",
+            "openui": [
+              "root = Stack([steps, note])",
+              "steps = Steps([s1, s2, s3])",
+              "s1 = Step(\"Keep documents ready\", \"Aadhaar, land record, bank passbook and an Aadhaar-linked mobile.\")",
+              "s2 = Step(\"Register\", \"On the PM-KISAN portal or at a Common Service Centre.\")",
+              "s3 = Step(\"Complete e-KYC\", \"Needed before instalments are released.\")",
+              "note = Callout(\"Sample guidance for UI testing.\", \"info\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "PM-KISAN Operational Guidelines",
+                "kind": "document"
+              }
+            ]
+          }
+        },
+        {
+          "from": "Check my scheme eligibility",
+          "user": {
+            "text": "Check PMFBY eligibility",
+            "formValues": {
+              "crop": "Wheat",
+              "season": "Rabi",
+              "area_ha": "0.8",
+              "farmer_type": "Non-loanee farmer",
+              "sowing_date": "2026-11-20"
+            }
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 84
+            },
+            "historyText": "Wheat in rabi is notified; you can enrol before the cut-off date.",
+            "openui": [
+              "root = Stack([stat, tbl, note, acts])",
+              "stat = StatCard(\"PMFBY\", \"Eligible to enrol\", \"Wheat, rabi, 0.8 ha\")",
+              "tbl = Table([\"Check\", \"Your answer\", \"Status\"], [[\"Crop notified for your area\", \"Wheat\", \"Yes\"], [\"Season open\", \"Rabi\", \"Open\"], [\"Farmer share of premium\", \"1.5% of sum insured\", \"Applies\"], [\"Farmer type\", \"Non-loanee farmer\", \"Enrol at bank or CSC\"]])",
+              "note = Callout(\"The cut-off is usually 31 December. Confirm with your bank or CSC.\", \"warn\")",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"Check another scheme\", @ToAssistant(\"Check my scheme eligibility\"), \"secondary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "PMFBY Operational Guidelines",
+                "kind": "document"
+              }
+            ]
+          }
+        },
+        {
+          "from": "Check my scheme eligibility",
+          "user": {
+            "text": "Check Kisan Credit Card eligibility",
+            "formValues": {
+              "land_ha": "1.2",
+              "main_crop": "Wheat",
+              "existing_loan": "No",
+              "loan_amount": "60000"
+            }
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 82
+            },
+            "historyText": "You qualify for a Kisan Credit Card; the bank sets the final limit.",
+            "openui": [
+              "root = Stack([stat, tbl, note, acts])",
+              "stat = StatCard(\"Kisan Credit Card\", \"Likely eligible\", \"Indicative limit ₹60,000, bank decides\")",
+              "tbl = Table([\"Check\", \"Your answer\", \"Status\"], [[\"Land held\", \"1.2 ha\", \"Meets\"], [\"Crop cycle\", \"Wheat\", \"Covered\"], [\"Existing farm loan\", \"No\", \"No clash\"], [\"Amount needed\", \"₹60,000\", \"Within the usual range\"]])",
+              "note = Callout(\"The limit depends on land, crop and the bank. Sample values for UI testing.\", \"info\")",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"Check another scheme\", @ToAssistant(\"Check my scheme eligibility\"), \"secondary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "KCC Scheme Guidelines",
+                "kind": "document"
+              }
+            ]
+          }
+        },
+        {
+          "from": "Check my scheme eligibility",
+          "user": {
+            "text": "Check PM-KUSUM eligibility",
+            "formValues": {
+              "owns_land": "Yes",
+              "land_ha": "2",
+              "water_source": "Borewell",
+              "pump_now": "Diesel pump"
+            }
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 80
+            },
+            "historyText": "A solar pump looks possible: you own 2 ha with a borewell and use a diesel pump.",
+            "openui": [
+              "root = Stack([stat, tbl, note, acts])",
+              "stat = StatCard(\"PM-KUSUM\", \"Likely fit\", \"Replace a diesel pump with a solar pump\")",
+              "tbl = Table([\"Check\", \"Your answer\", \"Status\"], [[\"Owns the land\", \"Yes (2 ha)\", \"Meets\"], [\"Water source\", \"Borewell\", \"Suitable\"], [\"Pump in use\", \"Diesel pump\", \"Can be replaced\"]])",
+              "note = Callout(\"Subsidy share and available slots differ by state. Sample guidance for UI testing.\", \"warn\")",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"Check another scheme\", @ToAssistant(\"Check my scheme eligibility\"), \"secondary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "PM-KUSUM Guidelines",
+                "kind": "document"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "S15",
+      "group": "Grievance",
+      "title": "Grievance: raise, track and escalate a complaint",
+      "kind": "multi",
+      "uiPatterns": [
+        "OptionCards (built-in)",
+        "TextArea (built-in)",
+        "Tag (built-in)",
+        "Form",
+        "Input (date)",
+        "Table",
+        "Steps"
+      ],
+      "turns": [
+        {
+          "user": {
+            "text": "I want to raise a complaint"
+          },
+          "response": {
+            "outcome": {
+              "status": "requires_input",
+              "cause": null,
+              "confidence": 91
+            },
+            "historyText": "Showed a complaint form: category, details and date.",
+            "openui": [
+              "root = Stack([hdr, form])",
+              "hdr = TextContent(\"Raise a complaint\", \"large-heavy\")",
+              "form = Form(\"grievance\", acts, [c1, c2, c3])",
+              "c1 = FormControl(\"What is your complaint about?\", OptionCards(\"category\", \"single\", [o1, o2, o3, o4]))",
+              "o1 = OptionCard(\"payment\", \"Payment not received\", \"PM-KISAN instalment\")",
+              "o2 = OptionCard(\"claim\", \"Insurance claim delayed\", \"PMFBY\")",
+              "o3 = OptionCard(\"price\", \"Mandi price dispute\", \"Weighing or rate\")",
+              "o4 = OptionCard(\"other\", \"Something else\", \"Any other service\")",
+              "c2 = FormControl(\"Tell us what happened\", TextArea(\"details\", \"Write a few lines\", 4, {required: true, minLength: 10}))",
+              "c3 = FormControl(\"Date it happened\", Input(\"incident_date\", \"\", \"date\", {required: true}))",
+              "acts = Buttons([go], \"row\")",
+              "go = Button(\"Submit complaint\", @ToAssistant(\"Submit my complaint\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "Grievance Redressal Guidelines",
+                "kind": "document"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Submit my complaint",
+            "formValues": {
+              "category": "payment",
+              "details": "Second instalment not credited after e-KYC was completed.",
+              "incident_date": "2026-10-10"
+            }
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 88
+            },
+            "historyText": "Complaint GRV-DEMO-0173 registered; reply expected within 7 working days.",
+            "openui": [
+              "root = Stack([ok, stat, steps, acts])",
+              "ok = Callout(\"Complaint GRV-DEMO-0173 registered.\", \"success\")",
+              "stat = StatCard(\"Expected reply\", \"7 working days\", \"Sample service level\")",
+              "steps = Steps([s1, s2, s3])",
+              "s1 = Step(\"Review\", \"The district office checks your complaint and date.\")",
+              "s2 = Step(\"Contact\", \"An officer may call you for more details.\")",
+              "s3 = Step(\"Reply\", \"You get a reply by SMS with the result.\")",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"Check my complaint status\", @ToAssistant(\"Check my complaint status\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "Grievance Redressal Guidelines",
+                "kind": "document"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Check my complaint status"
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 86
+            },
+            "historyText": "Complaint GRV-DEMO-0173 is in progress with the district office.",
+            "openui": [
+              "root = Stack([hdr, status, tbl, acts])",
+              "hdr = TextContent(\"Complaint GRV-DEMO-0173\", \"large-heavy\")",
+              "status = Tag(\"In progress\", null, \"md\", \"info\")",
+              "tbl = Table([\"Step\", \"Status\", \"Date\"], [[\"Registered\", \"Done\", \"19 Oct\"], [\"District office review\", \"In progress\", \"Since 20 Oct\"], [\"Reply to you\", \"Waiting\", \"-\"]])",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"Escalate my complaint\", @ToAssistant(\"Escalate my complaint\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "Grievance Redressal Guidelines",
+                "kind": "document"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Escalate my complaint"
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 82
+            },
+            "historyText": "Complaint escalated to the state nodal officer.",
+            "openui": [
+              "root = Stack([done, escalated, tbl, note])",
+              "done = Callout(\"Your complaint was sent to the state nodal officer.\", \"success\")",
+              "escalated = Tag(\"Escalated\", null, \"md\", \"warning\")",
+              "tbl = Table([\"Item\", \"Detail\"], [[\"Reference\", \"GRV-DEMO-0173\"], [\"Now with\", \"State nodal officer\"], [\"Reply expected\", \"Within 15 working days\"]])",
+              "note = Callout(\"Sample flow for UI testing. No complaint is stored.\", \"info\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "Grievance Redressal Guidelines",
+                "kind": "document"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "S16",
+      "group": "Agri advisory",
+      "title": "Crop advisory: crop and stage lead to symptoms, then advice and alerts",
+      "kind": "multi",
+      "uiPatterns": [
+        "RadioGroup (built-in)",
+        "CheckBoxGroup (built-in)",
+        "Conditional render ($vars)",
+        "Tag (built-in)",
+        "SwitchGroup (built-in)",
+        "Chips (built-in)",
+        "Table"
+      ],
+      "turns": [
+        {
+          "user": {
+            "text": "Get crop advice"
+          },
+          "response": {
+            "outcome": {
+              "status": "requires_input",
+              "cause": null,
+              "confidence": 90
+            },
+            "historyText": "Asked for the crop, its stage and what the farmer sees.",
+            "openui": [
+              "root = Stack([hdr, q1, q2, q3, aA])",
+              "$crop = \"\"",
+              "$stage = \"\"",
+              "$symptoms = {}",
+              "hdr = TextContent(\"Crop advice\", \"large-heavy\")",
+              "q1 = FormControl(\"Which crop?\", RadioGroup(\"crop\", [q1_0, q1_1, q1_2], null, null, $crop))",
+              "q1_0 = RadioItem(\"Wheat\", \"\", \"Wheat\")",
+              "q1_1 = RadioItem(\"Tomato\", \"\", \"Tomato\")",
+              "q1_2 = RadioItem(\"Maize\", \"\", \"Maize\")",
+              "q2 = $crop != \"\" ? q2a : null",
+              "q2a = FormControl(\"What stage is the crop at?\", RadioGroup(\"stage\", [q2a_0, q2a_1, q2a_2], null, null, $stage))",
+              "q2a_0 = RadioItem(\"Sowing\", \"\", \"Sowing\")",
+              "q2a_1 = RadioItem(\"Growing\", \"\", \"Growing\")",
+              "q2a_2 = RadioItem(\"Flowering\", \"\", \"Flowering\")",
+              "q3 = ($crop != \"\" && $stage != \"\") ? q3a : null",
+              "q3a = FormControl(\"What do you see?\", CheckBoxGroup(\"symptoms\", [k1, k2, k3, k4], null, $symptoms))",
+              "k1 = CheckBoxItem(\"Yellow leaves\", \"\", \"yellow_leaves\")",
+              "k2 = CheckBoxItem(\"White powder on leaves\", \"\", \"white_powder\")",
+              "k3 = CheckBoxItem(\"Holes in leaves\", \"\", \"leaf_holes\")",
+              "k4 = CheckBoxItem(\"Wilting\", \"\", \"wilting\")",
+              "aA = ($crop != \"\" && $stage != \"\") ? aAb : null",
+              "aAb = Buttons([bA], \"row\")",
+              "bA = Button(\"Get advice\", @ToAssistant(\"Get crop advisory\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "ICAR Crop Advisory",
+                "kind": "document"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Get crop advisory",
+            "formValues": {
+              "crop": "Wheat",
+              "stage": "Growing",
+              "symptoms": "yellow_leaves, white_powder"
+            }
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 79
+            },
+            "historyText": "Wheat at the growing stage with yellow leaves and white powder: check water and nitrogen, treat powdery mildew.",
+            "openui": [
+              "root = Stack([hdr, tag, tbl, note, acts])",
+              "hdr = TextContent(\"Wheat, growing stage\", \"large-heavy\")",
+              "tag = Tag(\"Watch closely\", null, \"md\", \"warning\")",
+              "tbl = Table([\"What you see\", \"Likely cause\", \"Action\"], [[\"Yellow leaves\", \"Too little nitrogen or too much water\", \"Check soil moisture. Top-dress urea if the field is dry.\"], [\"White powder on leaves\", \"Powdery mildew\", \"Remove badly hit leaves and ask your KVK about a spray.\"]])",
+              "note = Callout(\"Sample guidance for UI testing. Confirm with your local KVK.\", \"info\")",
+              "acts = Buttons([b1], \"row\")",
+              "b1 = Button(\"Send me weekly advice\", @ToAssistant(\"Send me weekly advice\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "ICAR Crop Advisory",
+                "kind": "document"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Send me weekly advice"
+          },
+          "response": {
+            "outcome": {
+              "status": "requires_input",
+              "cause": null,
+              "confidence": 90
+            },
+            "historyText": "Asked how and in which language to send weekly advice.",
+            "openui": [
+              "root = Stack([hdr, form])",
+              "hdr = TextContent(\"Weekly crop advice\", \"large-heavy\")",
+              "form = Form(\"advisory_alerts\", acts, [c1, c2])",
+              "c1 = FormControl(\"How should we reach you?\", SwitchGroup(\"channels\", [w1, w2, w3]))",
+              "w1 = SwitchItem(\"SMS\", \"Text message\", \"sms\")",
+              "w2 = SwitchItem(\"WhatsApp\", \"Message on WhatsApp\", \"whatsapp\")",
+              "w3 = SwitchItem(\"Voice call\", \"A short recorded call\", \"voice\")",
+              "c2 = FormControl(\"Language\", Chips(\"language\", \"single\", [l1, l2, l3]))",
+              "l1 = ChipItem(\"hi\", \"Hindi\")",
+              "l2 = ChipItem(\"mr\", \"Marathi\")",
+              "l3 = ChipItem(\"en\", \"English\")",
+              "acts = Buttons([go], \"row\")",
+              "go = Button(\"Save\", @ToAssistant(\"Save my advice settings\"), \"primary\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "ICAR Crop Advisory",
+                "kind": "document"
+              }
+            ]
+          }
+        },
+        {
+          "user": {
+            "text": "Save my advice settings",
+            "formValues": {
+              "channels": "sms, whatsapp",
+              "language": "hi"
+            }
+          },
+          "response": {
+            "outcome": {
+              "status": "answered",
+              "cause": null,
+              "confidence": 85
+            },
+            "historyText": "Weekly advice will come by SMS and WhatsApp in Hindi.",
+            "openui": [
+              "root = Stack([ok, active, tbl, note])",
+              "ok = Callout(\"Saved. You will get weekly advice for your crop.\", \"success\")",
+              "active = Tag(\"Active\", null, \"md\", \"success\")",
+              "tbl = Table([\"Setting\", \"Value\"], [[\"Crop\", \"Wheat\"], [\"Channels\", \"SMS, WhatsApp\"], [\"Language\", \"Hindi\"], [\"Day\", \"Every Monday\"]])",
+              "note = Callout(\"Demo only: the mock stores nothing.\", \"info\")"
+            ],
+            "sources": [
+              {
+                "id": "src_1",
+                "name": "ICAR Crop Advisory",
+                "kind": "document"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
       "id": "S05",
+      "group": "Agri advisory",
       "title": "Pest attack: image, confirm with farmer, spray plan, then fertilizer images",
       "kind": "multi-image",
       "uiPatterns": [
@@ -743,6 +2288,7 @@
     },
     {
       "id": "S06",
+      "group": "Agri advisory",
       "title": "Crop disease image: candidates, farmer confirms, treatment",
       "kind": "multi-image",
       "uiPatterns": [
@@ -877,145 +2423,8 @@
       ]
     },
     {
-      "id": "S07",
-      "title": "Mandi price with chart and nearby mandi comparison",
-      "kind": "multi",
-      "uiPatterns": [
-        "StatCard",
-        "BarChart",
-        "Table",
-        "Buttons",
-        "Callout"
-      ],
-      "attributes": {
-        "location": {
-          "region": "IN-GJ",
-          "area": "Anand",
-          "geometry": {
-            "type": "Point",
-            "coordinates": [
-              72.93,
-              22.56
-            ]
-          }
-        }
-      },
-      "turns": [
-        {
-          "user": {
-            "text": "What is the wheat price at Anand mandi this week?"
-          },
-          "response": {
-            "outcome": {
-              "status": "answered",
-              "cause": null,
-              "confidence": 92
-            },
-            "historyText": "Wheat is Rs 2,275 per quintal at Anand mandi.",
-            "openui": [
-              "root = Stack([hdr, stat, chart, tbl, note, acts])",
-              "hdr = TextContent(\"Wheat prices: Anand mandi, this week\", \"large-heavy\")",
-              "stat = StatCard(\"Modal price today\", \"₹2,275 / quintal\", \"+₹25 vs yesterday\")",
-              "chart = BarChart(\"Daily modal price\", [\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\"], [2210, 2230, 2250, 2250, 2275], \"₹/quintal\")",
-              "tbl = Table([\"Mandi\", \"Min\", \"Modal\", \"Max\"], [[\"Anand\", \"2,150\", \"2,275\", \"2,400\"], [\"Nadiad\", \"2,120\", \"2,240\", \"2,380\"], [\"Vadodara\", \"2,140\", \"2,260\", \"2,410\"]])",
-              "note = TextContent(\"Source: Agmarknet. Sample values for UI testing.\", \"muted\")",
-              "acts = Buttons([b1], \"row\")",
-              "b1 = Button(\"Show last 4 weeks\", @ToAssistant(\"Show last 4 weeks\"), \"primary\")"
-            ],
-            "sources": [
-              {
-                "id": "src_1",
-                "name": "Agmarknet",
-                "kind": "provider"
-              }
-            ]
-          }
-        },
-        {
-          "user": {
-            "text": "Show last 4 weeks"
-          },
-          "response": {
-            "outcome": {
-              "status": "answered",
-              "cause": null,
-              "confidence": 90
-            },
-            "historyText": "Wheat at Anand rose from Rs 2,150 to Rs 2,275 per quintal over 4 weeks.",
-            "openui": [
-              "root = Stack([hdr, stat, chart, note, acts])",
-              "hdr = TextContent(\"Wheat: last 4 weeks at Anand\", \"large-heavy\")",
-              "stat = StatCard(\"4-week change\", \"+₹125\", \"+5.8% since 4 weeks ago\")",
-              "chart = BarChart(\"Weekly modal price\", [\"Wk 1\", \"Wk 2\", \"Wk 3\", \"Wk 4\"], [2150, 2190, 2230, 2275], \"₹/quintal\")",
-              "note = TextContent(\"Source: Agmarknet. Sample values for UI testing.\", \"muted\")",
-              "acts = Buttons([b1], \"row\")",
-              "b1 = Button(\"Should I sell now or wait?\", @ToAssistant(\"Should I sell now or wait?\"), \"primary\")"
-            ],
-            "sources": [
-              {
-                "id": "src_1",
-                "name": "Agmarknet",
-                "kind": "provider"
-              }
-            ]
-          }
-        },
-        {
-          "user": {
-            "text": "Should I sell now or wait?"
-          },
-          "response": {
-            "outcome": {
-              "status": "answered",
-              "cause": null,
-              "confidence": 62
-            },
-            "historyText": "I cannot predict prices. Prices rose four weeks in a row; consider your storage and cash needs.",
-            "openui": [
-              "root = Stack([warn, tbl, acts])",
-              "warn = Callout(\"I cannot predict prices. Prices have risen 4 weeks in a row, but that can reverse.\", \"warn\")",
-              "tbl = Table([\"Consider\", \"Why\"], [[\"Storage\", \"Can you store safely without moisture or pest loss?\"], [\"Cash need\", \"Do you need money before the next harvest?\"], [\"Nearby mandis\", \"A different mandi may pay more after transport cost\"]])",
-              "acts = Buttons([b1], \"row\")",
-              "b1 = Button(\"Show nearby mandi prices for wheat\", @ToAssistant(\"Show nearby mandi prices for wheat\"), \"primary\")"
-            ],
-            "sources": [
-              {
-                "id": "src_1",
-                "name": "Agmarknet",
-                "kind": "provider"
-              }
-            ]
-          }
-        },
-        {
-          "user": {
-            "text": "Show nearby mandi prices for wheat"
-          },
-          "response": {
-            "outcome": {
-              "status": "answered",
-              "cause": null,
-              "confidence": 85
-            },
-            "historyText": "Ahmedabad pays the most at Rs 2,310, Anand Rs 2,275.",
-            "openui": [
-              "root = Stack([tbl, note])",
-              "tbl = Table([\"Mandi\", \"Distance\", \"Modal price (₹/quintal)\"], [[\"Anand\", \"0 km\", \"2,275\"], [\"Nadiad\", \"22 km\", \"2,240\"], [\"Kheda\", \"35 km\", \"2,230\"], [\"Vadodara\", \"40 km\", \"2,260\"], [\"Ahmedabad\", \"70 km\", \"2,310\"]])",
-              "note = Callout(\"Transport cost can cancel a small price gap. Sample values for UI testing.\", \"info\")"
-            ],
-            "sources": [
-              {
-                "id": "src_1",
-                "name": "Agmarknet",
-                "kind": "provider"
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
       "id": "S08",
+      "group": "Fertilizer",
       "title": "Fertilizer recommendation with product images",
       "kind": "multi",
       "uiPatterns": [
@@ -1144,415 +2553,6 @@
                 "id": "src_1",
                 "name": "State Agriculture University Package of Practices",
                 "kind": "document"
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "id": "S09",
-      "title": "PM-KISAN installment status (lookup form, then status with e-KYC alert)",
-      "kind": "multi",
-      "uiPatterns": [
-        "Form",
-        "Table",
-        "Callout (danger)",
-        "Steps"
-      ],
-      "turns": [
-        {
-          "user": {
-            "text": "Where is my PM-KISAN installment?"
-          },
-          "response": {
-            "outcome": {
-              "status": "requires_input",
-              "cause": null,
-              "confidence": 92
-            },
-            "historyText": "Asked for the registered mobile number to look up status.",
-            "openui": [
-              "root = Stack([hdr, form])",
-              "hdr = TextContent(\"Check PM-KISAN installment status\", \"large-heavy\")",
-              "form = Form(\"pmkisan_status\", acts, [c1])",
-              "c1 = FormControl(\"Registered mobile number\", Input(\"mobile\", \"10-digit number\", \"tel\", {required: true, minLength: 10}))",
-              "acts = Buttons([go], \"row\")",
-              "go = Button(\"Check status\", @ToAssistant(\"Check status for PM-KISAN\"), \"primary\")"
-            ],
-            "sources": [
-              {
-                "id": "src_1",
-                "name": "PM-KISAN Portal",
-                "kind": "provider"
-              }
-            ]
-          }
-        },
-        {
-          "user": {
-            "text": "Check status for PM-KISAN",
-            "formValues": {
-              "mobile": "9876543210"
-            }
-          },
-          "response": {
-            "outcome": {
-              "status": "answered",
-              "cause": null,
-              "confidence": 87
-            },
-            "historyText": "Two installments credited, third on hold because e-KYC is pending.",
-            "openui": [
-              "root = Stack([alert, tbl, steps, acts])",
-              "alert = Callout(\"Your next installment is on hold: e-KYC is pending.\", \"danger\")",
-              "tbl = Table([\"Installment\", \"Period\", \"Amount\", \"Status\"], [[\"1\", \"Apr to Jul 2026\", \"₹2,000\", \"Credited\"], [\"2\", \"Aug to Nov 2026\", \"₹2,000\", \"On hold: e-KYC pending\"], [\"3\", \"Dec 2026 to Mar 2027\", \"₹2,000\", \"Not due\"]])",
-              "steps = Steps([s1, s2])",
-              "s1 = Step(\"Do e-KYC\", \"Use Aadhaar OTP on the PM-KISAN portal, or biometric at a nearby CSC.\")",
-              "s2 = Step(\"Wait for release\", \"Held installments are usually released after verification.\")",
-              "acts = Buttons([b1], \"row\")",
-              "b1 = Button(\"How do I do e-KYC on my phone?\", @ToAssistant(\"How do I do e-KYC on my phone?\"), \"primary\")"
-            ],
-            "sources": [
-              {
-                "id": "src_1",
-                "name": "PM-KISAN Portal",
-                "kind": "provider"
-              }
-            ]
-          }
-        },
-        {
-          "user": {
-            "text": "How do I do e-KYC on my phone?"
-          },
-          "response": {
-            "outcome": {
-              "status": "answered",
-              "cause": null,
-              "confidence": 86
-            },
-            "historyText": "Open the portal, enter Aadhaar and captcha, verify the OTP, then check status.",
-            "openui": [
-              "root = Stack([steps, note, acts])",
-              "steps = Steps([s1, s2, s3, s4])",
-              "s1 = Step(\"Open the portal\", \"Go to the PM-KISAN portal and choose e-KYC.\")",
-              "s2 = Step(\"Enter Aadhaar\", \"Type your Aadhaar number and the captcha.\")",
-              "s3 = Step(\"Verify OTP\", \"Enter the OTP sent to your Aadhaar-linked mobile.\")",
-              "s4 = Step(\"Check status\", \"Return to the status page. The hold is usually lifted after verification.\")",
-              "note = Callout(\"Never share your OTP or bank PIN with anyone.\", \"warn\")",
-              "acts = Buttons([b1], \"row\")",
-              "b1 = Button(\"Update my bank account details\", @ToAssistant(\"Update my bank account details\"), \"primary\")"
-            ],
-            "sources": [
-              {
-                "id": "src_1",
-                "name": "PM-KISAN Portal",
-                "kind": "provider"
-              }
-            ]
-          }
-        },
-        {
-          "user": {
-            "text": "Update my bank account details"
-          },
-          "response": {
-            "outcome": {
-              "status": "answered",
-              "cause": null,
-              "confidence": 79
-            },
-            "historyText": "Check that your bank account is linked to Aadhaar, then update details at the bank or CSC.",
-            "openui": [
-              "root = Stack([steps, note])",
-              "steps = Steps([s1, s2, s3])",
-              "s1 = Step(\"Check Aadhaar link\", \"Ask your bank if the account is linked to your Aadhaar.\")",
-              "s2 = Step(\"Update at the bank\", \"Fill the Aadhaar seeding form at your branch.\")",
-              "s3 = Step(\"Re-check status\", \"After a few days, check the installment status again.\")",
-              "note = Callout(\"Sample guidance for UI testing.\", \"info\")"
-            ],
-            "sources": [
-              {
-                "id": "src_1",
-                "name": "PM-KISAN Portal",
-                "kind": "provider"
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "id": "S10",
-      "title": "Outcome states: partially_answered with refusal and question, then provider outage",
-      "kind": "multi",
-      "uiPatterns": [
-        "mixed content (text, refusal, text)",
-        "Select",
-        "Callout (danger)",
-        "error object",
-        "Retry",
-        "StatCard",
-        "Table"
-      ],
-      "turns": [
-        {
-          "user": {
-            "text": "Best soil for potato, today's gold price, and potato prices"
-          },
-          "response": {
-            "outcome": {
-              "status": "partially_answered",
-              "cause": null,
-              "confidence": 74
-            },
-            "historyText": "Potato likes well-drained sandy loam. Cannot help with gold prices. Which district for potato prices?",
-            "content": [
-              {
-                "type": "openui",
-                "lines": [
-                  "root = Stack([t, c])",
-                  "t = TextContent(\"Potato soil\", \"large-heavy\")",
-                  "c = Callout(\"Potato grows best in well-drained sandy loam with pH 5.2 to 6.4.\", \"success\")"
-                ]
-              },
-              {
-                "type": "refusal",
-                "text": "I cannot help with gold prices."
-              },
-              {
-                "type": "openui",
-                "lines": [
-                  "root = Stack([q, form])",
-                  "q = TextContent(\"Which district should I check potato prices for?\", \"body\")",
-                  "form = Form(\"potato_district\", acts, [c1])",
-                  "c1 = FormControl(\"District\", Select(\"district\", [\"Nashik\", \"Pune\", \"Ahmednagar\", \"Satara\"], \"Choose district\"))",
-                  "acts = Buttons([go], \"row\")",
-                  "go = Button(\"Check potato prices\", @ToAssistant(\"Check potato prices\"), \"primary\")"
-                ]
-              }
-            ],
-            "sources": [
-              {
-                "id": "src_1",
-                "name": "ICAR Potato Guide",
-                "kind": "document"
-              }
-            ]
-          }
-        },
-        {
-          "user": {
-            "text": "Check potato prices",
-            "formValues": {
-              "district": "Nashik"
-            }
-          },
-          "response": {
-            "outcome": {
-              "status": "unavailable",
-              "cause": "provider_unavailable",
-              "confidence": 0
-            },
-            "historyText": "The market-price service is unavailable. Try again shortly.",
-            "openui": [
-              "root = Stack([alert, acts])",
-              "alert = Callout(\"The market-price service is unavailable right now. Please try again shortly.\", \"danger\")",
-              "acts = Buttons([retry, last], \"row\")",
-              "retry = Button(\"Retry\", @ToAssistant(\"Check potato prices\"), \"primary\")",
-              "last = Button(\"Show last known price\", @ToAssistant(\"Show last known potato price\"), \"secondary\")"
-            ],
-            "error": {
-              "code": "provider_unavailable",
-              "message": "The required market-price Provider is unavailable.",
-              "retryable": true,
-              "retryAfterSeconds": 30
-            },
-            "sources": []
-          }
-        },
-        {
-          "user": {
-            "text": "Show last known potato price"
-          },
-          "response": {
-            "outcome": {
-              "status": "answered",
-              "cause": null,
-              "confidence": 58
-            },
-            "historyText": "Last saved potato price for Nashik was Rs 1,850 per quintal; the live service is still unavailable.",
-            "openui": [
-              "root = Stack([warn, stat, acts])",
-              "warn = Callout(\"Showing the last saved price. The live market-price service is still unavailable.\", \"warn\")",
-              "stat = StatCard(\"Last known modal price\", \"₹1,850 / quintal\", \"Nashik, saved copy from yesterday\")",
-              "acts = Buttons([b1], \"row\")",
-              "b1 = Button(\"Which district pays the best?\", @ToAssistant(\"Which district pays the best?\"), \"primary\")"
-            ],
-            "sources": [
-              {
-                "id": "src_1",
-                "name": "Agmarknet saved copy",
-                "kind": "provider"
-              }
-            ]
-          }
-        },
-        {
-          "user": {
-            "text": "Which district pays the best?"
-          },
-          "response": {
-            "outcome": {
-              "status": "answered",
-              "cause": null,
-              "confidence": 66
-            },
-            "historyText": "Pune was highest at Rs 1,920 per quintal in the saved copy.",
-            "openui": [
-              "root = Stack([tbl, note])",
-              "tbl = Table([\"District\", \"Modal price (₹/quintal)\"], [[\"Pune\", \"1,920\"], [\"Satara\", \"1,880\"], [\"Nashik\", \"1,850\"], [\"Ahmednagar\", \"1,790\"]])",
-              "note = Callout(\"Saved prices from yesterday, sample values for UI testing.\", \"info\")"
-            ],
-            "sources": [
-              {
-                "id": "src_1",
-                "name": "Agmarknet saved copy",
-                "kind": "provider"
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "id": "S11",
-      "title": "Weather forecast, spray window, then weather alert signup",
-      "kind": "multi",
-      "uiPatterns": [
-        "StatCard",
-        "BarChart",
-        "Table",
-        "Callout",
-        "Form",
-        "Select",
-        "Input"
-      ],
-      "turns": [
-        {
-          "user": {
-            "text": "What is the weather forecast for the next 5 days?"
-          },
-          "response": {
-            "outcome": {
-              "status": "answered",
-              "cause": null,
-              "confidence": 91
-            },
-            "historyText": "Next 5 days in Nashik: dry on Tuesday, heavy rain likely Thursday (18 mm).",
-            "openui": [
-              "root = Stack([hdr, stat, chart, tbl, note, acts])",
-              "hdr = TextContent(\"Nashik: 5-day forecast\", \"large-heavy\")",
-              "stat = StatCard(\"Rain expected this week\", \"28 mm\", \"Heaviest on Thursday\")",
-              "chart = BarChart(\"Forecast rainfall\", [\"Tue\", \"Wed\", \"Thu\", \"Fri\", \"Sat\"], [0, 4, 18, 6, 0], \"mm\")",
-              "tbl = Table([\"Day\", \"Max / Min °C\", \"Rain chance\", \"Wind km/h\"], [[\"Tue 20 Oct\", \"32 / 19\", \"5%\", \"8\"], [\"Wed 21 Oct\", \"31 / 20\", \"30%\", \"10\"], [\"Thu 22 Oct\", \"28 / 21\", \"85%\", \"18\"], [\"Fri 23 Oct\", \"29 / 20\", \"50%\", \"12\"], [\"Sat 24 Oct\", \"31 / 19\", \"10%\", \"7\"]])",
-              "note = TextContent(\"Source: IMD district forecast. Sample values for UI testing.\", \"muted\")",
-              "acts = Buttons([b1], \"row\")",
-              "b1 = Button(\"Is it safe to spray tomorrow?\", @ToAssistant(\"Is it safe to spray tomorrow?\"), \"primary\")"
-            ],
-            "sources": [
-              {
-                "id": "src_1",
-                "name": "IMD District Forecast",
-                "kind": "provider"
-              }
-            ]
-          }
-        },
-        {
-          "user": {
-            "text": "Is it safe to spray tomorrow?"
-          },
-          "response": {
-            "outcome": {
-              "status": "answered",
-              "cause": null,
-              "confidence": 88
-            },
-            "historyText": "Tomorrow is dry with light wind: spray early morning or evening, not midday.",
-            "openui": [
-              "root = Stack([ok, tbl, warn, acts])",
-              "ok = Callout(\"Tomorrow (Tue) is dry with light wind. Good for spraying in the morning.\", \"success\")",
-              "tbl = Table([\"Time window\", \"Wind\", \"Verdict\"], [[\"6 to 9 am\", \"5 km/h\", \"Best\"], [\"12 to 3 pm\", \"8 km/h\", \"Avoid: hot, spray dries fast\"], [\"4 to 7 pm\", \"8 km/h\", \"Good\"]])",
-              "warn = Callout(\"Heavy rain is likely on Thursday. Do not spray on Wednesday evening: rain may wash it off.\", \"warn\")",
-              "acts = Buttons([b1], \"row\")",
-              "b1 = Button(\"Set a weather alert\", @ToAssistant(\"Set a weather alert\"), \"primary\")"
-            ],
-            "sources": [
-              {
-                "id": "src_1",
-                "name": "IMD District Forecast",
-                "kind": "provider"
-              }
-            ]
-          }
-        },
-        {
-          "user": {
-            "text": "Set a weather alert"
-          },
-          "response": {
-            "outcome": {
-              "status": "requires_input",
-              "cause": null,
-              "confidence": 90
-            },
-            "historyText": "Asked which alert and which mobile number to use.",
-            "openui": [
-              "root = Stack([hdr, form])",
-              "hdr = TextContent(\"Get a weather alert by SMS\", \"large-heavy\")",
-              "form = Form(\"weather_alert\", acts, [c1, c2])",
-              "c1 = FormControl(\"Alert me about\", Select(\"alert_type\", [\"Heavy rain\", \"Heat wave\", \"Frost\", \"Strong wind\"], \"Choose alert\"))",
-              "c2 = FormControl(\"Mobile number\", Input(\"mobile\", \"10-digit number\", \"tel\", {required: true, minLength: 10}))",
-              "acts = Buttons([go], \"row\")",
-              "go = Button(\"Save alert\", @ToAssistant(\"Save my weather alert\"), \"primary\")"
-            ],
-            "sources": [
-              {
-                "id": "src_1",
-                "name": "IMD District Forecast",
-                "kind": "provider"
-              }
-            ]
-          }
-        },
-        {
-          "user": {
-            "text": "Save my weather alert",
-            "formValues": {
-              "alert_type": "Heavy rain",
-              "mobile": "9876543210"
-            }
-          },
-          "response": {
-            "outcome": {
-              "status": "answered",
-              "cause": null,
-              "confidence": 85
-            },
-            "historyText": "Heavy rain alert saved for Nashik by SMS.",
-            "openui": [
-              "root = Stack([ok, tbl, note])",
-              "ok = Callout(\"Alert saved: you will get an SMS before heavy rain in Nashik.\", \"success\")",
-              "tbl = Table([\"Setting\", \"Value\"], [[\"Alert\", \"Heavy rain\"], [\"Area\", \"Nashik\"], [\"Notify by\", \"SMS to XXXXXX3210\"], [\"Checked\", \"Every 6 hours\"]])",
-              "note = Callout(\"Demo only: the mock stores nothing.\", \"info\")"
-            ],
-            "sources": [
-              {
-                "id": "src_1",
-                "name": "IMD District Forecast",
-                "kind": "provider"
               }
             ]
           }

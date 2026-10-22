@@ -1,9 +1,17 @@
 // Turn n+1's user text must be one of the @ToAssistant messages in turn n's response.
 import { describe, expect, it } from "vitest";
-import { findTurn, type DatasetResponse } from "../shared/dataset";
+import { findTurn, type DatasetResponse, type Scenario } from "../shared/dataset";
 import { loadDataset } from "./helpers";
 
 const dataset = loadDataset();
+
+/** The turn this one follows: its `from` turn, else the previous one. */
+function parentOf(s: Scenario, n: number) {
+  const t = s.turns[n];
+  const parent = t.from ? s.turns.find((x) => x.user.text === t.from) : s.turns[n - 1];
+  if (t.from) expect(parent, `${s.id} turn ${n + 1}: from "${t.from}" matches no turn`).toBeDefined();
+  return parent;
+}
 
 function toAssistantMessages(r: DatasetResponse): string[] {
   const lines = [...(r.openui ?? []), ...(r.content ?? []).flatMap((c) => (c.type === "openui" ? c.lines : []))];
@@ -21,9 +29,11 @@ const INTENTIONALLY_UNMATCHED = [
 describe("chain check", () => {
   for (const s of dataset.scenarios) {
     it(`${s.id}: each next turn is a button in the previous response`, () => {
-      for (let n = 1; n < s.turns.length; n++) {
-        expect(toAssistantMessages(s.turns[n - 1].response)).toContain(s.turns[n].user.text);
-      }
+      s.turns.forEach((t, n) => {
+        const parent = parentOf(s, n);
+        if (!parent) return expect(n, `${s.id} turn ${n + 1} needs a parent`).toBe(0);
+        expect(toAssistantMessages(parent.response), `${s.id} turn ${n + 1}`).toContain(t.user.text);
+      });
     });
   }
 
@@ -48,11 +58,11 @@ describe("chain check", () => {
     for (const s of dataset.scenarios)
       s.turns.forEach((t, n) => {
         if (!t.user.formValues) return;
-        const prev = s.turns[n - 1];
+        const prev = parentOf(s, n);
         expect(prev, `${s.id} turn ${n + 1} has formValues but no previous turn`).toBeDefined();
-        const lines = [...(prev.response.openui ?? []), ...(prev.response.content ?? []).flatMap((c) => (c.type === "openui" ? c.lines : []))].join("\n");
+        const lines = [...(prev!.response.openui ?? []), ...(prev!.response.content ?? []).flatMap((c) => (c.type === "openui" ? c.lines : []))].join("\n");
         for (const key of Object.keys(t.user.formValues)) {
-          expect(lines, `${s.id} turn ${n + 1}: no field "${key}" in the previous form`).toMatch(new RegExp(`(Input|Select)\\("${key}"`));
+          expect(lines, `${s.id} turn ${n + 1}: no field "${key}" in the previous form`).toMatch(new RegExp(`(Input|Select|RadioGroup|CheckBoxGroup|SwitchGroup|Chips|OptionCards|TextArea)\\("${key}"|\\$${key}\\b`));
         }
       });
   });

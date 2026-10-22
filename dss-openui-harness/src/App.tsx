@@ -1,10 +1,11 @@
 import { Renderer, type ActionEvent, type OpenUIError } from "@openuidev/react-lang";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import type { Outcome, ResponseContent, TurnError } from "../shared/contract";
 import {
   composeUserText,
   historyTextFor,
   isOpenUI,
+  mainTurns,
   matchKey,
   type Dataset,
   type Scenario,
@@ -47,16 +48,35 @@ interface Session {
 
 let nextId = 1;
 
-/** Form values from an action event: formState is { [formName]: { [field]: { value } } }. */
-function formValuesFrom(event: ActionEvent): Record<string, string> | undefined {
-  if (!event.formName) return undefined;
-  const form = event.formState?.[event.formName] as Record<string, { value?: unknown }> | undefined;
-  if (!form) return undefined;
-  const out: Record<string, string> = {};
-  for (const [k, v] of Object.entries(form)) {
-    if (v?.value !== undefined && v.value !== null) out[k] = String(v.value);
+function asText(v: unknown): string {
+  if (v === null || v === undefined) return "";
+  if (Array.isArray(v)) return v.map(asText).filter(Boolean).join(", ");
+  // Checkbox and switch groups hold { name: true | false }: send the names that are on.
+  if (typeof v === "object") {
+    return Object.entries(v as Record<string, unknown>)
+      .filter(([, on]) => on === true)
+      .map(([k]) => k)
+      .join(", ");
   }
-  return out;
+  return String(v);
+}
+
+/**
+ * Answers from an action event. formState holds either { [formName]: { field: { value } } } for plain form
+ * fields, or, for fields bound to $variables (nested questions), every variable keyed "$name".
+ */
+function formValuesFrom(event: ActionEvent): Record<string, string> | undefined {
+  const state = (event.formState ?? {}) as Record<string, unknown>;
+  const out: Record<string, string> = {};
+  const form = event.formName ? (state[event.formName] as Record<string, { value?: unknown }> | undefined) : undefined;
+  if (form) {
+    for (const [k, v] of Object.entries(form)) out[k] = asText(v?.value);
+  }
+  for (const [k, v] of Object.entries(state)) {
+    if (k.startsWith("$")) out[k.slice(1)] = asText(v);
+  }
+  const clean = Object.fromEntries(Object.entries(out).filter(([, v]) => v !== ""));
+  return Object.keys(clean).length > 0 ? clean : undefined;
 }
 
 export function App() {
@@ -155,7 +175,7 @@ export function App() {
             { role: "user", text, image },
             { role: "assistant", text: historyTextFor(dataset, text) },
           ],
-          nextTurn: s.scenario?.turns[s.nextTurn]?.user.text === matchKey(text) ? s.nextTurn + 1 : s.nextTurn,
+          nextTurn: s.scenario && mainTurns(s.scenario)[s.nextTurn]?.user.text === matchKey(text) ? s.nextTurn + 1 : s.nextTurn,
         };
         setSession(next);
         sessionRef.current = next;
@@ -174,7 +194,7 @@ export function App() {
 
   const playNext = (scenario: Scenario) => {
     const s = session?.scenario?.id === scenario.id ? session : startSession(scenario);
-    const turn = scenario.turns[s.nextTurn];
+    const turn = mainTurns(scenario)[s.nextTurn];
     if (!turn) return;
     void send(composeUserText(turn.user.text, turn.user.formValues), turn.user.image, s);
   };
@@ -200,11 +220,13 @@ export function App() {
         <p className="ou-muted small">Mock DSS, no LLM. Sends POST /v1/turns per the v1 contract.</p>
         {loadError ? <div className="ou-callout ou-callout--danger">{loadError}</div> : null}
         <ul className="scenarios">
-          {dataset?.scenarios.map((sc) => {
+          {dataset?.scenarios.map((sc, idx) => {
             const active = session?.scenario?.id === sc.id;
             const done = active ? session.nextTurn : 0;
             return (
-              <li key={sc.id} className={active ? "scenario active" : "scenario"}>
+              <Fragment key={sc.id}>
+              {sc.group && sc.group !== dataset.scenarios[idx - 1]?.group ? <li className="scenario-group">{sc.group}</li> : null}
+              <li className={active ? "scenario active" : "scenario"}>
                 <button type="button" className="scenario-title" onClick={() => startSession(sc)} disabled={busy}>
                   <span className="sid">{sc.id}</span> {sc.title}
                 </button>
@@ -219,14 +241,15 @@ export function App() {
                 <button
                   type="button"
                   className="ou-button ou-button--secondary small-btn"
-                  disabled={busy || !dataset || done >= sc.turns.length}
+                  disabled={busy || !dataset || done >= mainTurns(sc).length}
                   onClick={() => playNext(sc)}
                 >
-                  {done >= sc.turns.length
-                    ? `All ${sc.turns.length} scripted turns played`
-                    : `Play next scripted turn (${done + 1}/${sc.turns.length})`}
+                  {done >= mainTurns(sc).length
+                    ? `All ${mainTurns(sc).length} scripted turns played`
+                    : `Play next scripted turn (${done + 1}/${mainTurns(sc).length})`}
                 </button>
               </li>
+              </Fragment>
             );
           })}
         </ul>

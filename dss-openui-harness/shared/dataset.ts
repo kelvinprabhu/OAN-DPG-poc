@@ -22,12 +22,16 @@ export interface DatasetUser {
 }
 
 export interface DatasetTurn {
+  /** user.text of the turn this one follows, when it is not the previous turn (a branch of a form tree). */
+  from?: string;
   user: DatasetUser;
   response: DatasetResponse;
 }
 
 export interface Scenario {
   id: string;
+  /** Heading the scenario is listed under in the UI. */
+  group?: string;
   title: string;
   kind: string;
   uiPatterns: string[];
@@ -52,6 +56,24 @@ export interface Dataset {
 /** The match key: the text before the first newline (form values follow on later lines). */
 export function matchKey(text: string): string {
   return text.split("\n", 1)[0];
+}
+
+/** The scripted path: turns that follow the previous turn. Branches (`from`) are reached by interaction. */
+export function mainTurns(scenario: Scenario): DatasetTurn[] {
+  return scenario.turns.filter((t) => !t.from);
+}
+
+/** Turns from the first one to `turn`, following `from` links (else the previous turn). */
+export function pathTo(scenario: Scenario, turn: DatasetTurn): DatasetTurn[] {
+  const path: DatasetTurn[] = [turn];
+  for (let cur = turn; ; ) {
+    const i = scenario.turns.indexOf(cur);
+    const parent = cur.from ? scenario.turns.find((t) => t.user.text === cur.from) : scenario.turns[i - 1];
+    if (!parent) break;
+    path.unshift(parent);
+    cur = parent;
+  }
+  return path;
 }
 
 export function findTurn(dataset: Dataset, text: string): DatasetTurn | undefined {

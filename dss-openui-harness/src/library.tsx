@@ -13,6 +13,8 @@ import {
   useStateField,
   useTriggerAction,
 } from "@openuidev/react-lang";
+import { openuiLibrary } from "@openuidev/react-ui/genui-lib";
+import "@openuidev/react-ui/components.css";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useMemo, useRef } from "react";
@@ -135,17 +137,36 @@ const Select = defineComponent({
 
 const FormControl = defineComponent({
   name: "FormControl",
-  description: "Labelled form field.",
+  description: "Labelled form field: one of our Input or Select, or a built-in OpenUI field (RadioGroup, CheckBoxGroup, SwitchGroup, Chips, OptionCards, TextArea).",
   props: z.object({
     label: z.string(),
     field: z.union([Input.ref, Select.ref]),
   }),
-  component: ({ props, renderNode }) => (
-    <label className="ou-control">
-      <span className="ou-label">{props.label}</span>
-      {renderNode(props.field)}
-    </label>
-  ),
+  component: ({ props, renderNode }) => {
+    const child = props.field as unknown as { typeName?: string; props?: { name?: string; value?: unknown } } | null;
+    const typeName = child?.typeName;
+    // A question bound to a $variable clears its answer when it disappears (a parent answer changed), so
+    // hidden branches never leave stale answers behind.
+    const bound = useStateField(child?.props?.name ?? "", child?.props?.value);
+    const clear = useRef<() => void>(() => undefined);
+    clear.current = () => {
+      if (bound.isReactive) bound.setValue(typeName === "CheckBoxGroup" || typeName === "SwitchGroup" ? {} : "");
+    };
+    useEffect(() => () => clear.current(), []);
+    // A <label> around a radio group would make a click anywhere pick its first option.
+    const native = typeName === "Input" || typeName === "Select";
+    return native ? (
+      <label className="ou-control">
+        <span className="ou-label">{props.label}</span>
+        {renderNode(props.field)}
+      </label>
+    ) : (
+      <div className="ou-control" role="group" aria-label={props.label}>
+        <span className="ou-label">{props.label}</span>
+        {renderNode(props.field)}
+      </div>
+    );
+  },
 });
 
 const Button = defineComponent({
@@ -416,7 +437,7 @@ const Map = defineComponent({
       for (const m of markers) {
         const color = TONE_COLOR[m.tone ?? "info"];
         L.circleMarker([m.lat, m.lon], { radius: 11, color, weight: 2, fillColor: color, fillOpacity: 0.55 })
-          .bindTooltip(m.value ? `${m.label}: ${m.value}` : m.label, { permanent: true, direction: "right", offset: [10, 0] })
+          .bindTooltip(m.value ? `${m.label}: ${m.value}` : m.label, { permanent: true, direction: "auto", offset: [10, 0] })
           .addTo(layer);
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -456,6 +477,7 @@ const Stack = defineComponent({
         StatCard.ref,
         Steps.ref,
         Map.ref,
+        FormControl.ref,
       ]),
     ),
     direction: z.enum(["column", "row"]).optional(),
@@ -465,7 +487,7 @@ const Stack = defineComponent({
   ),
 });
 
-export const agriLibrary = createLibrary({
+const baseLibrary = createLibrary({
   root: "Stack",
   components: [
     Stack,
@@ -487,4 +509,28 @@ export const agriLibrary = createLibrary({
     Map,
     MapMarker,
   ],
+});
+
+// Built-in OpenUI elements reused as they are (from @openuidev/react-ui). Slider and Tabs are left out:
+// both froze the renderer in our jsdom tests.
+const builtIn = openuiLibrary.components as Record<string, any>;
+const field = (name: string) => ({ component: builtIn[name], slots: ["FormControl.field"] });
+
+export const agriLibrary = baseLibrary.extend!({
+  components: {
+    add: [
+      field("RadioGroup"),
+      builtIn.RadioItem,
+      field("CheckBoxGroup"),
+      builtIn.CheckBoxItem,
+      field("SwitchGroup"),
+      builtIn.SwitchItem,
+      field("Chips"),
+      builtIn.ChipItem,
+      field("OptionCards"),
+      builtIn.OptionCard,
+      field("TextArea"),
+      { component: builtIn.Tag, slots: ["Stack.children"] },
+    ],
+  },
 });

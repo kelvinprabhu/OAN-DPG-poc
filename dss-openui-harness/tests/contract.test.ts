@@ -1,7 +1,7 @@
 // Replays every scenario through the real request builder against the mock, in JSON and SSE modes.
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { TurnEvent, TurnRequest, TurnResponse } from "../shared/contract";
-import { composeUserText, historyTextFor } from "../shared/dataset";
+import { composeUserText, historyTextFor, pathTo } from "../shared/dataset";
 import { buildRequest, imageAttachment, newSessionId, type HistoryEntry } from "../src/buildRequest";
 import { sendTurn, type SendResult } from "../src/sendTurn";
 import { loadDataset, publicFetch, startMock, UI_ORIGIN } from "./helpers";
@@ -64,22 +64,29 @@ for (const stream of [false, true]) {
       it(`${scenario.id}: ${scenario.title}`, async () => {
         const sessionId = newSessionId(scenario.id);
         expect(sessionId).toMatch(new RegExp(`^conv_${scenario.id}_[a-z0-9]{6}$`));
-        const history: HistoryEntry[] = [];
-        for (const [i, turn] of scenario.turns.entries()) {
+        for (const turn of scenario.turns) {
+          // History = the turns on the way to this one (a branch replays its parent chain).
+          const path = pathTo(scenario, turn);
+          const history: HistoryEntry[] = [];
+          for (const p of path.slice(0, -1)) {
+            const pt = composeUserText(p.user.text, p.user.formValues);
+            const pi = p.user.image ? await imageAttachment(p.user.image, UI_ORIGIN, publicFetch) : undefined;
+            history.push({ role: "user", text: pt, image: pi }, { role: "assistant", text: historyTextFor(dataset, pt) });
+          }
           const text = composeUserText(turn.user.text, turn.user.formValues);
           const image = turn.user.image ? await imageAttachment(turn.user.image, UI_ORIGIN, publicFetch) : undefined;
           const request = buildRequest({ dataset, scenario, sessionId, history, current: { text, image } });
 
           // Request side
           TurnRequest.parse(request);
-          expect(request.message.input).toHaveLength(i * 2 + 1);
+          expect(request.message.input).toHaveLength((path.length - 1) * 2 + 1);
           expect(request.message.input.filter((m) => m.role === "assistant").every((m) => !m.content.some((c) => c.type === "text" && c.text.includes("root =")))).toBe(true);
           if (image) {
             expect(image.url).toBe(`${UI_ORIGIN}${turn.user.image}`);
             expect(request.message.input.at(-1)!.content[1]).toEqual({ type: "image", attachment: image });
           }
 
-          const result = await sendTurn(request, { baseUrl: mock.baseUrl, stream, gzip: i % 2 === 1 });
+          const result = await sendTurn(request, { baseUrl: mock.baseUrl, stream, gzip: scenario.turns.indexOf(turn) % 2 === 1 });
           expect(result.status, result.rawBody).toBe(200);
           const response = TurnResponse.parse(result.response);
           if (stream) checkSse(result);
@@ -97,7 +104,6 @@ for (const stream of [false, true]) {
             expect(response.message.content).toEqual([{ type: "text", text: turn.response.openui.join("\n"), annotations: [] }]);
           }
 
-          history.push({ role: "user", text, image }, { role: "assistant", text: historyTextFor(dataset, text) });
         }
       });
     }
